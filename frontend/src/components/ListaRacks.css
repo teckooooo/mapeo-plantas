@@ -1,0 +1,75 @@
+.lista-rack-container {
+  padding: 20px;
+}
+
+.rack-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.rack-card {
+  flex: 1 1 300px;
+  max-width: 320px;
+}
+
+.rack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-btn {
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.rack-equipos {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.equipo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.lista-rack-img {
+  width: 400px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lista-rack-img-placeholder {
+  width: 64px;
+  height: 64px;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 28px;
+}
+
+.sin-equipos {
+  font-style: italic;
+  color: #777;
+}
+
+.lista-rack-img-grande {
+  max-width: 100%;
+  display: block;
+  border-radius: 8px;
+}

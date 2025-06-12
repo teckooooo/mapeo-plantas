@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Información del Dispositivo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .campo {
+      margin-bottom: 10px;
+    }
+    .campo strong {
+      display: inline-block;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Información del Dispositivo</h2>
+  <div id="info">Cargando...</div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+
+    if (!id) {
+      document.getElementById("info").innerText = "ID de dispositivo no especificado.";
+    } else {
+      fetch(`http://localhost/mapeo-plantas/backend/api/get_equipo.php?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.id) {
+            document.getElementById("info").innerHTML = `
+              ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
+              <div class="campo"><strong>Nombre:</strong> ${data.nombre}</div>
+              <div class="campo"><strong>IP:</strong> ${data.ip || "—"}</div>
+              <div class="campo"><strong>Marca:</strong> ${data.marca || "—"}</div>
+              <div class="campo"><strong>Modelo:</strong> ${data.modelo || "—"}</div>
+              <div class="campo"><strong>Función:</strong> ${data.funcion || "—"}</div>
+              <div class="campo"><strong>Etiquetas:</strong> ${data.etiquetas || "—"}</div>
+            `;
+          } else {
+            document.getElementById("info").innerText = "Dispositivo no encontrado.";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("info").innerText = "Error al cargar los datos.";
+        });
+    }
+  </script>
+</body>
+</html>
