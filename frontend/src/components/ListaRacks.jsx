@@ -43,36 +43,45 @@ function ListaRacks({ plantaId, recargar }) {
               <>
                 <p>{rack.descripcion || <em>Sin descripción</em>}</p>
 
-                {rack.foto ? (
-                  <div style={{ position: "relative", display: "inline-block" }}>
-                    <img
-                      src={rack.foto}
-                      alt={`Rack ${rack.numero}`}
+                {Array.isArray(rack.fotos) && rack.fotos.length > 0 ? (
+                  rack.fotos.map((foto, idx) => (
+                    <div
+                      key={idx}
                       style={{
-                        width: '100%',
-                        maxWidth: '500px',
-                        border: '1px solid #ccc',
-                        marginBottom: '10px'
+                        position: "relative",
+                        marginBottom: "20px",
+                        maxWidth: '500px'
                       }}
-                    />
-                    {Array.isArray(rack.equipos) && rack.equipos.map(e => (
-                      <div
-                        key={e.id}
-                        title={e.nombre}
-                        style={{
-                          position: "absolute",
-                          top: `${e.y}px`,
-                          left: `${e.x}px`,
-                          width: `${e.width}px`,
-                          height: `${e.height}px`,
-                          border: "2px dashed #00f",
-                          backgroundColor: "rgba(0, 0, 255, 0.1)",
-                          cursor: "pointer"
-                        }}
-                        onClick={() => window.open(`/dispositivo-info.html?id=${e.id}`, "_blank")}
+                    >
+                      <img
+                        src={foto.src}
+                        alt={`Rack ${rack.numero} - Imagen ${idx + 1}`}
+                        style={{ width: '100%', display: 'block' }}
                       />
-                    ))}
-                  </div>
+
+                      {/* Áreas interactivas solo si imagen_id coincide */}
+                      {Array.isArray(rack.equipos) &&
+                        rack.equipos
+                          .filter(e => String(e.imagen_id) === String(foto.id))
+                          .map(e => (
+                            <div
+                              key={e.id}
+                              title={e.nombre}
+                              style={{
+                                position: "absolute",
+                                top: `${(e.y / 500) * 100}%`,
+                                left: `${(e.x / 800) * 100}%`,
+                                width: `${(e.width / 800) * 100}%`,
+                                height: `${(e.height / 500) * 100}%`,
+                                border: "2px dashed #00f",
+                                backgroundColor: "rgba(0, 0, 255, 0.1)",
+                                cursor: "pointer"
+                              }}
+                              onClick={() => window.open(`/dispositivo-info.html?id=${e.id}`, "_blank")}
+                            />
+                          ))}
+                    </div>
+                  ))
                 ) : (
                   <p className="sin-equipos">Sin imagen de rack disponible.</p>
                 )}

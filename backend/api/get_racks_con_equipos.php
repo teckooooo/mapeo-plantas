@@ -20,7 +20,7 @@ try {
   $racks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   foreach ($racks as &$rack) {
-    // Obtener equipos del rack
+    // Obtener todos los equipos del rack
     $stmt2 = $pdo->prepare("
       SELECT 
         id, nombre, ip, foto,
@@ -33,20 +33,53 @@ try {
     ");
     $stmt2->execute([$rack['id']]);
     $equipos = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    $rack['equipos'] = [];
 
-    $rack['equipos'] = $equipos;
+    $fotosAgrupadas = [];
+    $fotoIds = [];
 
-    // Usar la primera imagen de los equipos como imagen del rack (si existe)
-    $rack['foto'] = null;
-    foreach ($equipos as $e) {
-      if (!empty($e['foto'])) {
-        $rack['foto'] = $e['foto'];
-        break;
+    foreach ($equipos as $equipo) {
+      $hash = md5($equipo['foto'] ?? ''); // prevenir error si es null
+
+      if (!isset($fotosAgrupadas[$hash])) {
+        $fotoIds[$hash] = count($fotoIds) + 1;
+        $fotosAgrupadas[$hash] = [
+          'id' => $fotoIds[$hash],
+          'src' => $equipo['foto'],
+          'equipos' => []
+        ];
       }
+
+      $fotosAgrupadas[$hash]['equipos'][] = [
+        'id' => $equipo['id'],
+        'nombre' => $equipo['nombre'],
+        'ip' => $equipo['ip'],
+        'x' => $equipo['x'],
+        'y' => $equipo['y'],
+        'width' => $equipo['width'],
+        'height' => $equipo['height'],
+        'imagen_id' => $fotoIds[$hash]
+      ];
     }
+
+    $rack['fotos'] = array_values(array_map(function ($f) {
+      return ['id' => $f['id'], 'src' => $f['src']];
+    }, $fotosAgrupadas));
+
+    $rack['equipos'] = array_merge(...array_column($fotosAgrupadas, 'equipos'));
   }
 
-  echo json_encode($racks);
+  $json = json_encode($racks);
+  if ($json === false) {
+    echo json_encode([
+      "success" => false,
+      "error" => "Error al convertir a JSON",
+      "json_error" => json_last_error_msg()
+    ]);
+    exit;
+  }
+
+  echo $json;
 } catch (Exception $e) {
   http_response_code(500);
   echo json_encode([
