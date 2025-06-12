@@ -20,13 +20,7 @@ try {
   $racks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   foreach ($racks as &$rack) {
-    // ✅ Obtener la imagen BLOB del rack y codificarla como base64
-    $stmtImg = $pdo->prepare("SELECT data_larga FROM imagenes WHERE rack_id = ? ORDER BY id DESC LIMIT 1");
-    $stmtImg->execute([$rack['id']]);
-    $imagenBinaria = $stmtImg->fetchColumn();
-    $rack['foto'] = $imagenBinaria ? 'data:image/jpeg;base64,' . base64_encode($imagenBinaria) : null;
-
-    // ✅ Obtener equipos con coordenadas para renderizado en frontend
+    // Obtener equipos del rack
     $stmt2 = $pdo->prepare("
       SELECT 
         id, nombre, ip, foto,
@@ -38,7 +32,18 @@ try {
       WHERE rack_id = ?
     ");
     $stmt2->execute([$rack['id']]);
-    $rack['equipos'] = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    $equipos = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    $rack['equipos'] = $equipos;
+
+    // Usar la primera imagen de los equipos como imagen del rack (si existe)
+    $rack['foto'] = null;
+    foreach ($equipos as $e) {
+      if (!empty($e['foto'])) {
+        $rack['foto'] = $e['foto'];
+        break;
+      }
+    }
   }
 
   echo json_encode($racks);
