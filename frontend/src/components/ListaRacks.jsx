@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import RackImageEditor from "./RackImageEditor.tsx";
 import './ListaRacks.css';
 
-function ListaRacks({ plantaId, recargar }) {
+function ListaRacks({ plantaId, recargar, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
   const [abiertos, setAbiertos] = useState({});
 
@@ -44,47 +45,26 @@ function ListaRacks({ plantaId, recargar }) {
                 <p>{rack.descripcion || <em>Sin descripción</em>}</p>
 
                 {Array.isArray(rack.fotos) && rack.fotos.length > 0 ? (
-                  rack.fotos.map((foto, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        position: "relative",
-                        marginBottom: "20px",
-                        maxWidth: '500px'
-                      }}
-                    >
-                      <img
-                        src={foto.src}
-                        alt={`Rack ${rack.numero} - Imagen ${idx + 1}`}
-                        style={{ width: '100%', display: 'block' }}
-                      />
+  rack.fotos.map((foto, idx) => {
+    console.log(`📷 Imagen rack ${rack.numero} - ID ${foto.id}:`, foto.src?.substring(0, 100));
 
-                      {/* Áreas interactivas solo si imagen_id coincide */}
-                      {Array.isArray(rack.equipos) &&
-                        rack.equipos
-                          .filter(e => String(e.imagen_id) === String(foto.id))
-                          .map(e => (
-                            <div
-                              key={e.id}
-                              title={e.nombre}
-                              style={{
-                                position: "absolute",
-                                top: `${(e.y / 500) * 100}%`,
-                                left: `${(e.x / 800) * 100}%`,
-                                width: `${(e.width / 800) * 100}%`,
-                                height: `${(e.height / 500) * 100}%`,
-                                border: "2px dashed #00f",
-                                backgroundColor: "rgba(0, 0, 255, 0.1)",
-                                cursor: "pointer"
-                              }}
-                              onClick={() => window.open(`/dispositivo-info.html?id=${e.id}`, "_blank")}
-                            />
-                          ))}
-                    </div>
-                  ))
-                ) : (
-                  <p className="sin-equipos">Sin imagen de rack disponible.</p>
-                )}
+    return (
+      <div key={idx} className="rack-image-wrapper">
+        <RackImageEditor
+          foto={foto}
+          dispositivos={Array.isArray(rack.equipos)
+            ? rack.equipos.filter(e => String(e.imagen_id) === String(foto.id))
+            : []}
+          onNuevaArea={(area) => onNuevaArea({ ...area, rack_id: rack.id })}
+          imagenId={foto.id}
+        />
+      </div>
+    );
+  })
+) : (
+  <p className="sin-equipos">Sin imagen de rack disponible.</p>
+)}
+
               </>
             )}
           </div>

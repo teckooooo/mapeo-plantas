@@ -4,33 +4,35 @@ require_once '../config/db.php';
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-// Validar parámetro id
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$id = $_GET['id'] ?? null;
 
-if ($id <= 0) {
-    echo json_encode([
-        "success" => false,
-        "error" => "Parámetro 'id' no válido"
-    ]);
-    exit;
+if (!$id) {
+  echo json_encode(["success" => false, "error" => "ID no especificado"]);
+  exit;
 }
 
-try {
-    $stmt = $pdo->prepare("SELECT * FROM equipos WHERE id = ?");
-    $stmt->execute([$id]);
-    $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT * FROM equipos WHERE id = ?");
+$stmt->execute([$id]);
+$equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($equipo) {
-        echo json_encode($equipo);
-    } else {
-        echo json_encode([
-            "success" => false,
-            "error" => "Dispositivo no encontrado"
-        ]);
-    }
-} catch (Exception $e) {
-    echo json_encode([
-        "success" => false,
-        "error" => "Error en la consulta: " . $e->getMessage()
-    ]);
+if (!$equipo) {
+  echo json_encode(["success" => false, "error" => "Dispositivo no encontrado"]);
+  exit;
 }
+
+// Si hay imagen_id asociado, cargar la imagen
+if ($equipo['imagen_id']) {
+  $stmtImg = $pdo->prepare("SELECT data_larga FROM imagenes WHERE id = ?");
+  $stmtImg->execute([$equipo['imagen_id']]);
+  $imagen = $stmtImg->fetch(PDO::FETCH_ASSOC);
+
+  if ($imagen && $imagen['data_larga']) {
+    $equipo['foto'] = 'data:image/jpeg;base64,' . base64_encode($imagen['data_larga']);
+  } else {
+    $equipo['foto'] = null;
+  }
+} else {
+  $equipo['foto'] = null;
+}
+
+echo json_encode($equipo);

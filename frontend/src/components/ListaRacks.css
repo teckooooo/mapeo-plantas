@@ -10,7 +10,7 @@
 
 .rack-card {
   flex: 1 1 300px;
-  max-width: 320px;
+  max-width: 100%;
 }
 
 .rack-header {
@@ -30,46 +30,46 @@
   cursor: pointer;
 }
 
-.rack-equipos {
-  list-style: none;
-  padding-left: 0;
-  margin-top: 10px;
+.rack-image-wrapper {
+  width: 100%;
+  max-width: 750px;
+  margin-bottom: 20px;
 }
 
-.equipo-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+.rack-image-container {
+  position: relative;
+  width: 100%;
 }
 
-.lista-rack-img {
-  width: 400px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 6px;
+.rack-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.rack-overlay {
+  position: absolute;
+  border: 2px dashed #00f;
+  background-color: rgba(0, 0, 255, 0.1);
   cursor: pointer;
 }
 
-.lista-rack-img-placeholder {
-  width: 64px;
-  height: 64px;
-  background: #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 28px;
-}
 
 .sin-equipos {
   font-style: italic;
   color: #777;
 }
 
-.lista-rack-img-grande {
-  max-width: 100%;
+/* ListaRacks.css */
+.rack-editor {
+  position: relative;
+  width: 100%;
+}
+
+.rack-editor img {
+  width: 100%;
+  height: auto;
   display: block;
-  border-radius: 8px;
 }
