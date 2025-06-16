@@ -1,0 +1,86 @@
+Se ejecutó el script
+Se ejecutó el script
+Se ejecutó el script
+Se ejecutó el script
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 17
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 17
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 17
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 17
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Sin racks
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Procesando rack ID 19
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 18
+Procesando rack ID 19
+Procesando rack ID 20
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 19
+Procesando rack ID 20
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Procesando rack ID 20
+Todo ok. Enviando JSON.
+== Inicio del script ==
+Consulta de racks
+Sin racks
