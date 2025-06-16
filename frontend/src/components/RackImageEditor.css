@@ -1,0 +1,54 @@
+.rack-editor {
+  position: relative;
+  cursor: default;
+  user-select: none;
+}
+
+.rack-image {
+  width: 100%;
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+  border: 1px solid #ccc;
+}
+
+.drawing-box {
+  position: absolute;
+  border: 2px dashed red;
+  background-color: rgba(255, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.no-image {
+  padding: 20px;
+  color: gray;
+}
+
+.rack-editor {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  cursor: default;
+}
+
+.rack-image {
+  width: 100%;
+  display: block;
+  border: 1px solid #ccc;
+  object-fit: contain;
+}
+
+.no-image {
+  padding: 20px;
+  color: gray;
+  text-align: center;
+}
+
+.drawing-box {
+  position: absolute;
+  border: 2px dashed red;
+  background-color: rgba(255, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 9999;
+}

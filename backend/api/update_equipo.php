@@ -20,8 +20,19 @@ $funcion = $data['funcion'] ?? "";
 $etiquetas = $data['etiquetas'] ?? "";
 $foto = $data['foto'] ?? null;
 
-$sql = "UPDATE equipos SET nombre = ?, ip = ?, marca = ?, modelo = ?, funcion = ?, etiquetas = ?, foto = ? WHERE id = ?";
+// SQL dinámico para conservar imagen si no se edita
+$sql = "UPDATE equipos SET nombre = ?, ip = ?, marca = ?, modelo = ?, funcion = ?, etiquetas = ?";
+$params = [$nombre, $ip, $marca, $modelo, $funcion, $etiquetas];
+
+if ($foto !== null) {
+  $sql .= ", foto = ?";
+  $params[] = $foto;
+}
+
+$sql .= " WHERE id = ?";
+$params[] = $id;
+
 $stmt = $pdo->prepare($sql);
-$success = $stmt->execute([$nombre, $ip, $marca, $modelo, $funcion, $etiquetas, $foto, $id]);
+$success = $stmt->execute($params);
 
 echo json_encode(["success" => $success]);

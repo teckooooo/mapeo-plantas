@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, MouseEvent } from "react";
 import { Rnd } from "react-rnd";
+import "./RackImageEditor.css";
 
 interface Dispositivo {
   id?: number;
@@ -23,7 +24,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   const [drawing, setDrawing] = useState(false);
   const [start, setStart] = useState<{ x: number; y: number } | null>(null);
   const [currentBox, setCurrentBox] = useState<Omit<Dispositivo, "id"> | null>(null);
-  const [dispositivosTemporales, setDispositivosTemporales] = useState<Dispositivo[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     const img = containerRef.current?.querySelector("img");
@@ -43,9 +44,9 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   }, []);
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 2) return; // Solo click derecho
-    e.preventDefault();
+    if (!(e.button === 0 && e.shiftKey)) return;
 
+    e.preventDefault();
     const bounds = containerRef.current?.getBoundingClientRect();
     if (!bounds) return;
 
@@ -77,13 +78,38 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
     if (drawing && currentBox) {
       onNuevaArea({ ...currentBox, imagen_id: imagenId });
     }
-
     setDrawing(false);
     setStart(null);
     setCurrentBox(null);
   };
 
-  const todosLosDispositivos = [...dispositivos, ...dispositivosTemporales];
+const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
+  fetch("http://localhost/mapeo-plantas/backend/api/update_equipo_posicion.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id, ...newPos }),
+  })
+    .then(async (res) => {
+      const text = await res.text(); // primero lo leemos como texto
+      try {
+        const data = JSON.parse(text); // luego intentamos parsearlo
+        if (!data.success) {
+          console.error("❌ Error en respuesta JSON:", data);
+        }
+      } catch (err) {
+        console.error("❌ Respuesta no es JSON válido:", text); // aquí vemos el HTML o el error real
+      }
+    })
+    .catch((err) => {
+      console.error("❌ Error de red al guardar posición:", err);
+    });
+};
+
+
+
+
 
   return (
     <div
@@ -92,78 +118,73 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onContextMenu={(e) => e.preventDefault()}
-      style={{
-        position: "relative",
-        cursor: drawing ? "crosshair" : "default",
-        userSelect: "none"
-      }}
     >
-      {/* Imagen base64 */}
       {foto?.src ? (
         <img
-  src={foto.src}
-  alt="Rack"
-  style={{
-    width: "100%",
-    display: "block",
-    maxWidth: "100%",
-    maxHeight: "auto",
-    objectFit: "contain",
-    border: "1px solid #ccc",
-  }}
-  onError={(e) => {
-    console.error("❌ Imagen no cargó correctamente:", foto.src);
-    (e.target as HTMLImageElement).style.display = "none";
-  }}
-/>
-
+          src={foto.src}
+          alt="Rack"
+          className="rack-image"
+          onError={(e) => {
+            console.error("❌ Imagen no cargó correctamente:", foto.src);
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+        />
       ) : (
-        <div style={{ padding: 20, color: "gray" }}>Imagen no disponible</div>
+        <div className="no-image">Imagen no disponible</div>
       )}
 
-      {/* Dispositivos existentes */}
-      {todosLosDispositivos.map((d, i) => (
+      {dispositivos.map((d, i) => (
         <Rnd
-  key={d.id ?? `temp-${i}`}
-  size={{
-    width: d.width * scale.x,
-    height: d.height * scale.y,
-  }}
-  position={{
-    x: d.x * scale.x,
-    y: d.y * scale.y,
-  }}
-  enableResizing={false}
-  disableDragging
-  onClick={() => {
-    if (d.id) {
-      window.open(`/dispositivo-info.html?id=${d.id}`, "_blank");
-    }
-  }}
-  style={{
-    position: "absolute",
-    border: "2px dashed blue",
-    backgroundColor: "rgba(0, 0, 255, 0.1)",
-    cursor: d.id ? "pointer" : "default"
-  }}
-/>
-
-      ))}
-
-      {/* Caja temporal mientras se dibuja */}
-      {currentBox && (
-        <div
+          key={d.id ?? `temp-${i}`}
+          size={{ width: d.width * scale.x, height: d.height * scale.y }}
+          position={{ x: d.x * scale.x, y: d.y * scale.y }}
+          enableResizing={d.id === editingId}
+          disableDragging={d.id !== editingId}
+          onClick={(e) => {
+            if (e.ctrlKey && d.id) {
+              e.stopPropagation();
+              setEditingId(d.id);
+            } else if (d.id && d.id !== editingId) {
+              window.open(`/dispositivo-info.html?id=${d.id}`, "_blank");
+            }
+          }}
+          onResizeStop={(e, dir, ref, delta, pos) => {
+            if (d.id === editingId) {
+              const update = {
+                x: pos.x / scale.x,
+                y: pos.y / scale.y,
+                width: ref.offsetWidth / scale.x,
+                height: ref.offsetHeight / scale.y,
+              };
+              handleSaveUpdate(d.id, update);
+            }
+          }}
+          onDragStop={(e, data) => {
+            if (d.id === editingId) {
+              const update = {
+                x: data.x / scale.x,
+                y: data.y / scale.y,
+              };
+              handleSaveUpdate(d.id, update);
+            }
+          }}
           style={{
             position: "absolute",
+            border: d.id === editingId ? "2px solid green" : "2px dashed blue",
+            backgroundColor: "rgba(0, 0, 255, 0.1)",
+            cursor: "pointer",
+          }}
+        />
+      ))}
+
+      {currentBox && (
+        <div
+          className="drawing-box"
+          style={{
             left: currentBox.x * scale.x,
             top: currentBox.y * scale.y,
             width: currentBox.width * scale.x,
             height: currentBox.height * scale.y,
-            border: "2px dashed red",
-            backgroundColor: "rgba(255,0,0,0.1)",
-            pointerEvents: "none",
-            zIndex: 9999
           }}
         />
       )}

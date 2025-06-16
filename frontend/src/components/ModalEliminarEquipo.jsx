@@ -6,7 +6,6 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
   const [equipos, setEquipos] = useState([]);
   const [equipoId, setEquipoId] = useState("");
 
-  // Obtener racks según planta
   useEffect(() => {
     if (plantaId) {
       fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaId}`)
@@ -26,7 +25,6 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
     }
   }, [plantaId]);
 
-  // Obtener equipos cuando se selecciona un rack
   useEffect(() => {
     if (rackId) {
       fetch(`http://localhost/mapeo-plantas/backend/api/get_equipos_by_rack.php?rack_id=${rackId}`)
@@ -75,24 +73,41 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
 
   return (
     <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center"
+      position: "fixed",
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex", justifyContent: "center", alignItems: "center",
+      zIndex: 9999 // 🛡️ asegura que el modal esté por encima de todo
     }}>
-      <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", width: "350px" }}>
+      <div style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "8px",
+        width: "350px",
+        zIndex: 10000 // 🔒 asegura prioridad incluso dentro del modal
+      }}>
         <h3>Eliminar Dispositivo</h3>
 
         <label>Selecciona Rack:</label>
-        <select value={rackId} onChange={e => setRackId(e.target.value)} style={{ width: "100%" }}>
+        <select
+          value={rackId}
+          onChange={e => setRackId(e.target.value)}
+          style={{ width: "100%" }}
+        >
           <option value="">-- Selecciona un rack --</option>
-          {Array.isArray(racks) && racks.map(r => (
+          {racks.map(r => (
             <option key={r.id} value={r.id}>Rack {r.numero || r.id}</option>
           ))}
         </select>
 
         <label style={{ marginTop: "10px" }}>Selecciona Dispositivo:</label>
-        <select value={equipoId} onChange={e => setEquipoId(e.target.value)} style={{ width: "100%" }}>
+        <select
+          value={equipoId}
+          onChange={e => setEquipoId(e.target.value)}
+          style={{ width: "100%" }}
+        >
           <option value="">-- Selecciona un dispositivo --</option>
-          {Array.isArray(equipos) && equipos.map(e => (
+          {equipos.map(e => (
             <option key={e.id} value={e.id}>
               {e.nombre} – {e.ip || "—"}
             </option>

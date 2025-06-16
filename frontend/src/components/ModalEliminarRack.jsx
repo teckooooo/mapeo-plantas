@@ -50,20 +50,36 @@ function ModalEliminarRack({ plantaId, visible, onClose, onSuccess }) {
 
   return (
     <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center"
+      position: "fixed",
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex", justifyContent: "center", alignItems: "center",
+      zIndex: 9999 // ✅ corrección clave para que esté sobre todo
     }}>
-      <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", width: "300px" }}>
+      <div style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "8px",
+        width: "300px",
+        zIndex: 10000 // también aseguramos el modal en sí
+      }}>
         <h3>Eliminar Rack</h3>
-        <select value={rackId} onChange={e => setRackId(e.target.value)} style={{ width: "100%" }}>
+        <select
+          value={rackId}
+          onChange={e => setRackId(e.target.value)}
+          style={{ width: "100%" }}
+        >
           <option value="">-- Selecciona un rack --</option>
           {Array.isArray(racks) && racks.map(r => (
             <option key={r.id} value={r.id}>Rack {r.numero || r.id}</option>
           ))}
         </select>
+
         <div style={{ marginTop: "15px", textAlign: "right" }}>
           <button onClick={onClose}>Cancelar</button>
-          <button onClick={handleDelete} style={{ marginLeft: "10px" }}>Eliminar</button>
+          <button onClick={handleDelete} style={{ marginLeft: "10px" }}>
+            Eliminar
+          </button>
         </div>
       </div>
     </div>

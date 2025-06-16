@@ -3,26 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Información del Dispositivo</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      max-width: 700px;
-      margin: auto;
-    }
-    img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    .campo {
-      margin-bottom: 10px;
-    }
-    .campo strong {
-      display: inline-block;
-      width: 100px;
-    }
-  </style>
+  <link rel="stylesheet" href="dispositivo.css">
 </head>
 <body>
   <h2>Información del Dispositivo</h2>
@@ -31,6 +12,44 @@
   <script>
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
+    let dispositivoData = null;
+    let modoEdicion = false;
+
+    function renderVista(data) {
+      const info = document.getElementById("info");
+
+      if (modoEdicion) {
+        info.innerHTML = `
+          ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
+          <div class="campo"><strong>Nombre:</strong> <input id="nombre" value="${data.nombre}"></div>
+          <div class="campo"><strong>IP:</strong> <input id="ip" value="${data.ip || ""}"></div>
+          <div class="campo"><strong>Marca:</strong> <input id="marca" value="${data.marca || ""}"></div>
+          <div class="campo"><strong>Modelo:</strong> <input id="modelo" value="${data.modelo || ""}"></div>
+          <div class="campo"><strong>Función:</strong> <textarea id="funcion">${data.funcion || ""}</textarea></div>
+          <div class="campo"><strong>Etiquetas:</strong> <textarea id="etiquetas">${data.etiquetas || ""}</textarea></div>
+
+          <div class="acciones">
+            <button class="btn-guardar" onclick="guardarCambios(${data.id})">💾 Guardar</button>
+            <button class="btn-cancelar" onclick="cancelarEdicion()">Cancelar</button>
+          </div>
+        `;
+      } else {
+        info.innerHTML = `
+          ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
+          <div class="campo"><strong>Nombre:</strong> ${data.nombre}</div>
+          <div class="campo"><strong>IP:</strong> ${data.ip || "—"}</div>
+          <div class="campo"><strong>Marca:</strong> ${data.marca || "—"}</div>
+          <div class="campo"><strong>Modelo:</strong> ${data.modelo || "—"}</div>
+          <div class="campo"><strong>Función:</strong> ${data.funcion || "—"}</div>
+          <div class="campo"><strong>Etiquetas:</strong> ${data.etiquetas || "—"}</div>
+
+          <div class="acciones">
+            <button class="btn-editar" onclick="activarEdicion()">📝 Editar</button>
+            <button class="btn-eliminar" onclick="eliminarDispositivo(${data.id})">🗑️ Eliminar</button>
+          </div>
+        `;
+      }
+    }
 
     if (!id) {
       document.getElementById("info").innerText = "ID de dispositivo no especificado.";
@@ -39,15 +58,8 @@
         .then(res => res.json())
         .then(data => {
           if (data && data.id) {
-            document.getElementById("info").innerHTML = `
-              ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
-              <div class="campo"><strong>Nombre:</strong> ${data.nombre}</div>
-              <div class="campo"><strong>IP:</strong> ${data.ip || "—"}</div>
-              <div class="campo"><strong>Marca:</strong> ${data.marca || "—"}</div>
-              <div class="campo"><strong>Modelo:</strong> ${data.modelo || "—"}</div>
-              <div class="campo"><strong>Función:</strong> ${data.funcion || "—"}</div>
-              <div class="campo"><strong>Etiquetas:</strong> ${data.etiquetas || "—"}</div>
-            `;
+            dispositivoData = data;
+            renderVista(dispositivoData);
           } else {
             document.getElementById("info").innerText = "Dispositivo no encontrado.";
           }
@@ -55,6 +67,73 @@
         .catch(err => {
           console.error(err);
           document.getElementById("info").innerText = "Error al cargar los datos.";
+        });
+    }
+
+    function activarEdicion() {
+      modoEdicion = true;
+      renderVista(dispositivoData);
+    }
+
+    function cancelarEdicion() {
+      modoEdicion = false;
+      renderVista(dispositivoData);
+    }
+
+    function guardarCambios(id) {
+      const actualizados = {
+        id,
+        nombre: document.getElementById("nombre").value.trim(),
+        ip: document.getElementById("ip").value.trim(),
+        marca: document.getElementById("marca").value.trim(),
+        modelo: document.getElementById("modelo").value.trim(),
+        funcion: document.getElementById("funcion").value.trim(),
+        etiquetas: document.getElementById("etiquetas").value.trim(),
+        foto: dispositivoData.foto || null
+      };
+
+      fetch("http://localhost/mapeo-plantas/backend/api/update_equipo.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(actualizados)
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Cambios guardados.");
+            modoEdicion = false;
+            dispositivoData = { ...dispositivoData, ...actualizados };
+            renderVista(dispositivoData);
+          } else {
+            alert("❌ Error al guardar cambios.");
+          }
+        })
+        .catch(err => {
+          console.error("Error al guardar:", err);
+          alert("⚠️ Ocurrió un error al guardar.");
+        });
+    }
+
+    function eliminarDispositivo(id) {
+      if (!confirm("¿Estás seguro de eliminar este dispositivo?")) return;
+
+      fetch("http://localhost/mapeo-plantas/backend/api/delete_equipo.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Dispositivo eliminado correctamente.");
+            window.location.href = "index.html";
+          } else {
+            alert("❌ Error al eliminar el dispositivo.");
+          }
+        })
+        .catch(err => {
+          console.error("Error al eliminar:", err);
+          alert("⚠️ Ocurrió un error al eliminar.");
         });
     }
   </script>
