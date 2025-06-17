@@ -1,40 +1,67 @@
 import { useEffect, useState } from "react";
 import RackImageEditor from "./RackImageEditor.tsx";
-import './ListaRacks.css';
+import "./ListaRacks.css";
 
 function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
   const [abiertos, setAbiertos] = useState({});
+  const STORAGE_KEY = `rack_expandido_por_id_${plantaId}`;
 
+  // Cargar racks y restaurar estado expandido por ID
+// Cargar racks y restaurar estado expandido por ID
+useEffect(() => {
+  if (!plantaId) return;
+
+  const STORAGE_KEY = `rack_expandido_por_id_${plantaId}`; // Mover dentro del efecto
+
+  fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!Array.isArray(data)) {
+        console.error("Respuesta inesperada del backend:", data);
+        return;
+      }
+
+      setRacks(data);
+
+      let parsedState = {};
+      try {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) parsedState = JSON.parse(savedState);
+      } catch (e) {
+        console.warn("⚠️ Error al leer estado expandido:", e);
+      }
+
+      const estadoInicial = {};
+      data.forEach(r => {
+        estadoInicial[r.id] = parsedState[r.id] ?? true;
+      });
+
+      setAbiertos(estadoInicial);
+    })
+    .catch(err => console.error("Error al cargar racks:", err));
+}, [plantaId, recargar]);
+
+
+  // Aplicar expansión global si se solicita
   useEffect(() => {
-    if (!plantaId) return;
+    if (expandirTodo === null || racks.length === 0) return;
 
-    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data)) {
-          console.error("Respuesta inesperada del backend:", data);
-          return;
-        }
-
-        const estadoInicial = {};
-        data.forEach(r => {
-          estadoInicial[r.id] = expandirTodo === null ? true : expandirTodo;
-        });
-        setAbiertos(estadoInicial);
-        setRacks(data);
-      })
-      .catch(err => console.error("Error al cargar racks:", err));
-  }, [plantaId, recargar, expandirTodo]);
-
-  useEffect(() => {
     const nuevoEstado = {};
-    racks.forEach(r => { nuevoEstado[r.id] = expandirTodo; });
+    racks.forEach(r => {
+      nuevoEstado[r.id] = expandirTodo;
+    });
+
     setAbiertos(nuevoEstado);
-  }, [expandirTodo, racks]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevoEstado));
+  }, [expandirTodo, racks, STORAGE_KEY]);
 
   const toggleRack = (rackId) => {
-    setAbiertos(prev => ({ ...prev, [rackId]: !prev[rackId] }));
+    setAbiertos(prev => {
+      const actualizado = { ...prev, [rackId]: !prev[rackId] };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(actualizado));
+      return actualizado;
+    });
   };
 
   const handleEliminarFoto = (fotoId) => {
@@ -43,7 +70,7 @@ function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuev
     fetch("http://localhost/mapeo-plantas/backend/api/delete_imagen.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imagen_id: fotoId })
+      body: JSON.stringify({ imagen_id: fotoId }),
     })
       .then(res => res.json())
       .then(data => {
@@ -86,7 +113,6 @@ function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuev
                           onNuevaArea={(area) => onNuevaArea({ ...area, rack_id: rack.id })}
                           imagenId={foto.id}
                         />
-
                         <button
                           onClick={() => handleEliminarFoto(foto.id)}
                           className="btn-eliminar-imagen"

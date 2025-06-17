@@ -3,73 +3,273 @@
 <head>
   <meta charset="UTF-8">
   <title>Información del Dispositivo</title>
-  <link rel="stylesheet" href="dispositivo.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .foto-principal,
+    .fotos-adicionales img {
+      width: 480px;
+      height: 270px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .fotos-adicionales img:hover {
+      transform: scale(1.02);
+    }
+
+    .info-dispositivo {
+      width: 280px;
+      position: sticky;
+      top: 20px;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+
+    .info-dispositivo .campo {
+      margin: 10px 0;
+    }
+
+    .info-dispositivo .acciones {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-dispositivo button {
+      padding: 8px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-editar { background: #007bff; color: white; }
+    .btn-eliminar { background: #dc3545; color: white; }
+    .btn-subir { background: #28a745; color: white; }
+
+    .galeria-fotos {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .fotos-adicionales {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .fotos-adicionales .foto-adicional {
+      position: relative;
+    }
+
+    .btn-eliminar-foto {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Visor modal */
+    #visorModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #visorModal img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    #visorModal .cerrar {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h2>Información del Dispositivo</h2>
-  <div id="info">Cargando...</div>
+  
+  <div class="info-dispositivo" id="info">Cargando...</div>
+  <div class="galeria-fotos" id="galeria"></div>
+
+  <!-- Visor modal -->
+  <div id="visorModal" onclick="cerrarVisor(event)">
+    <span class="cerrar" onclick="cerrarVisor()">✖</span>
+    <img id="visorImagen" src="">
+  </div>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
+    const id = new URLSearchParams(location.search).get("id");
     let dispositivoData = null;
     let modoEdicion = false;
 
-    function renderVista(data) {
-      const info = document.getElementById("info");
-
-      if (modoEdicion) {
-        info.innerHTML = `
-          ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
-          <div class="campo"><strong>Nombre:</strong> <input id="nombre" value="${data.nombre}"></div>
-          <div class="campo"><strong>IP:</strong> <input id="ip" value="${data.ip || ""}"></div>
-          <div class="campo"><strong>Marca:</strong> <input id="marca" value="${data.marca || ""}"></div>
-          <div class="campo"><strong>Modelo:</strong> <input id="modelo" value="${data.modelo || ""}"></div>
-          <div class="campo"><strong>Función:</strong> <textarea id="funcion">${data.funcion || ""}</textarea></div>
-          <div class="campo"><strong>Etiquetas:</strong> <textarea id="etiquetas">${data.etiquetas || ""}</textarea></div>
-
-          <div class="acciones">
-            <button class="btn-guardar" onclick="guardarCambios(${data.id})">💾 Guardar</button>
-            <button class="btn-cancelar" onclick="cancelarEdicion()">Cancelar</button>
-          </div>
-        `;
-      } else {
-        info.innerHTML = `
-          ${data.foto ? `<img src="${data.foto}" alt="${data.nombre}">` : ""}
-          <div class="campo"><strong>Nombre:</strong> ${data.nombre}</div>
-          <div class="campo"><strong>IP:</strong> ${data.ip || "—"}</div>
-          <div class="campo"><strong>Marca:</strong> ${data.marca || "—"}</div>
-          <div class="campo"><strong>Modelo:</strong> ${data.modelo || "—"}</div>
-          <div class="campo"><strong>Función:</strong> ${data.funcion || "—"}</div>
-          <div class="campo"><strong>Etiquetas:</strong> ${data.etiquetas || "—"}</div>
-
-          <div class="acciones">
-            <button class="btn-editar" onclick="activarEdicion()">📝 Editar</button>
-            <button class="btn-eliminar" onclick="eliminarDispositivo(${data.id})">🗑️ Eliminar</button>
-          </div>
-        `;
-      }
-    }
-
     if (!id) {
-      document.getElementById("info").innerText = "ID de dispositivo no especificado.";
+      document.getElementById("info").innerText = "ID no especificado.";
     } else {
-      fetch(`http://localhost/mapeo-plantas/backend/api/get_equipo.php?id=${id}`)
+      fetch(`http://localhost/mapeo-plantas/backend/api/get_dispositivo_completo.php?id=${id}`)
         .then(res => res.json())
         .then(data => {
-          if (data && data.id) {
-            dispositivoData = data;
+          if (data.success) {
+            dispositivoData = data.equipo;
             renderVista(dispositivoData);
           } else {
             document.getElementById("info").innerText = "Dispositivo no encontrado.";
           }
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById("info").innerText = "Error al cargar los datos.";
         });
     }
 
+    function renderVista(data) {
+  const infoContenedor = document.getElementById("info");
+  let contenidoHTML = "";
+
+  if (modoEdicion) {
+    contenidoHTML = `
+      <div class="campo"><strong>Nombre:</strong> <input id="nombre" value="${data.nombre}"></div>
+      <div class="campo"><strong>IP:</strong> <input id="ip" value="${data.ip || ""}"></div>
+      <div class="campo"><strong>Marca:</strong> <input id="marca" value="${data.marca || ""}"></div>
+      <div class="campo"><strong>Modelo:</strong> <input id="modelo" value="${data.modelo || ""}"></div>
+      <div class="campo"><strong>Función:</strong> <textarea id="funcion">${data.funcion || ""}</textarea></div>
+      <div class="campo"><strong>Etiquetas:</strong> <textarea id="etiquetas">${data.etiquetas || ""}</textarea></div>
+      <div class="acciones">
+        <button class="btn-guardar" onclick="guardarCambios(${data.id})">💾 Guardar</button>
+        <button class="btn-cancelar" onclick="cancelarEdicion()">Cancelar</button>
+      </div>
+    `;
+  } else {
+    contenidoHTML = `
+      <h2>Información del Dispositivo</h2>
+      <div class="campo"><strong>Nombre:</strong> ${data.nombre}</div>
+      <div class="campo"><strong>IP:</strong> ${data.ip || "—"}</div>
+      <div class="campo"><strong>Marca:</strong> ${data.marca || "—"}</div>
+      <div class="campo"><strong>Modelo:</strong> ${data.modelo || "—"}</div>
+      <div class="campo"><strong>Función:</strong> ${data.funcion || "—"}</div>
+      <div class="campo"><strong>Etiquetas:</strong> ${data.etiquetas || "—"}</div>
+      <div class="acciones">
+        <button class="btn-editar" onclick="activarEdicion()">📝 Editar</button>
+        <button class="btn-eliminar" onclick="eliminarDispositivo(${data.id})">🗑️ Eliminar</button>
+        <button class="btn-subir" onclick="agregarFoto(${data.id})">📷 Agregar Foto</button>
+      </div>
+    `;
+  }
+
+  infoContenedor.innerHTML = contenidoHTML;
+
+  // Galería de imágenes
+  const galeria = document.getElementById("galeria");
+  galeria.innerHTML = "";
+
+  if (data.foto) {
+    const img = document.createElement("img");
+    img.src = data.foto;
+    img.className = "foto-principal";
+    img.onclick = () => mostrarEnGrande(img.src);
+    galeria.appendChild(img);
+  }
+
+  const contenedorExtras = document.createElement("div");
+  contenedorExtras.className = "fotos-adicionales";
+
+  (data.fotos_adicionales || []).forEach(f => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "foto-adicional";
+
+    const img = document.createElement("img");
+    img.src = f.ruta;
+    img.onclick = () => mostrarEnGrande(f.ruta);
+
+    const btn = document.createElement("button");
+    btn.className = "btn-eliminar-foto";
+    btn.innerText = "✖";
+    btn.onclick = () => eliminarFotoAdicional(f.id);
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(btn);
+    contenedorExtras.appendChild(wrapper);
+  });
+
+  galeria.appendChild(contenedorExtras);
+}
+
+
+    function mostrarEnGrande(src) {
+      document.getElementById("visorImagen").src = src;
+      document.getElementById("visorModal").style.display = "flex";
+    }
+
+    function cerrarVisor(e) {
+      if (!e || e.target.id === "visorModal" || e.target.classList.contains("cerrar")) {
+        document.getElementById("visorModal").style.display = "none";
+        document.getElementById("visorImagen").src = "";
+      }
+    }
+
+    function eliminarFotoAdicional(fotoId) {
+      if (!confirm("¿Eliminar esta foto?")) return;
+
+      fetch("http://localhost/mapeo-plantas/backend/api/delete_foto_dispositivo.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: fotoId })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Foto eliminada.");
+            location.reload();
+          } else {
+            alert("❌ No se pudo eliminar.");
+          }
+        });
+    }
+
+    function eliminarDispositivo(id) {
+      if (!confirm("¿Eliminar el dispositivo completo?")) return;
+
+      fetch("http://localhost/mapeo-plantas/backend/api/delete_equipo.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Dispositivo eliminado.");
+            window.location.href = "index.html";
+          } else {
+            alert("❌ Error al eliminar.");
+          }
+        });
+    }
     function activarEdicion() {
       modoEdicion = true;
       renderVista(dispositivoData);
@@ -79,7 +279,6 @@
       modoEdicion = false;
       renderVista(dispositivoData);
     }
-
     function guardarCambios(id) {
       const actualizados = {
         id,
@@ -114,27 +313,37 @@
         });
     }
 
-    function eliminarDispositivo(id) {
-      if (!confirm("¿Estás seguro de eliminar este dispositivo?")) return;
+    function agregarFoto(dispositivoId) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
 
-      fetch("http://localhost/mapeo-plantas/backend/api/delete_equipo.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: id })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert("✅ Dispositivo eliminado correctamente.");
-            window.location.href = "index.html";
-          } else {
-            alert("❌ Error al eliminar el dispositivo.");
-          }
-        })
-        .catch(err => {
-          console.error("Error al eliminar:", err);
-          alert("⚠️ Ocurrió un error al eliminar.");
-        });
+      input.onchange = () => {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          fetch("http://localhost/mapeo-plantas/backend/api/agregar_foto_dispositivo.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              dispositivo_id: dispositivoId,
+              data_larga: reader.result
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                alert("📸 Foto añadida.");
+                location.reload();
+              } else {
+                alert("❌ Error al subir.");
+              }
+            });
+        };
+        reader.readAsDataURL(file);
+      };
+
+      input.click();
     }
   </script>
 </body>

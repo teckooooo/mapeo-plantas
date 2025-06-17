@@ -15,7 +15,7 @@ function ModalAgregarRack({ plantaId, visible, onClose, onSuccess }) {
     body: JSON.stringify({
       planta_id: plantaId,
       numero,
-      descripcion, // puede ser vacío o nulo
+      descripcion,
     }),
   })
     .then(res => res.json())

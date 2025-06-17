@@ -14,7 +14,8 @@ interface Dispositivo {
 interface Props {
   foto: { src: string };
   dispositivos: Dispositivo[];
-  onNuevaArea: (area: Omit<Dispositivo, "id"> & { imagen_id: number }) => void;
+  onNuevaArea: (area: Omit<Dispositivo, "id"> & { imagen_id: number; foto_src: string }) => void;
+
   imagenId: number;
 }
 
@@ -80,7 +81,8 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
 
   const handleMouseUp = () => {
     if (drawing && currentBox) {
-      onNuevaArea({ ...currentBox, imagen_id: imagenId });
+      onNuevaArea({ ...currentBox, imagen_id: imagenId, foto_src: foto.src });
+
     }
     setDrawing(false);
     setStart(null);

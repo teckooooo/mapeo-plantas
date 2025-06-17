@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import "./ModalAgregarEquipo.css";
 
 function ModalAgregarEquipo({
   plantaId,
@@ -20,7 +21,9 @@ function ModalAgregarEquipo({
   const [imageSrc, setImageSrc] = useState(null);
   const [crop, setCrop] = useState({ unit: "px", width: 100, height: 100 });
   const [completedCrop, setCompletedCrop] = useState(null);
-  const [imgRef, setImgRef] = useState(null);
+
+  const imgRef = useRef(null);
+  const [scaleFactor, setScaleFactor] = useState(1);
 
   const usandoAreaPreseleccionada = !!areaPreseleccionada;
 
@@ -52,25 +55,12 @@ function ModalAgregarEquipo({
   };
 
   const guardarDispositivo = (imagen_id_final) => {
-    const rack_id_final = usandoAreaPreseleccionada
-      ? areaPreseleccionada.rack_id
-      : rackId;
+    const rack_id_final = usandoAreaPreseleccionada ? areaPreseleccionada.rack_id : rackId;
 
-    const area_x = usandoAreaPreseleccionada
-      ? areaPreseleccionada.x
-      : Math.round(completedCrop?.x ?? 0);
-
-    const area_y = usandoAreaPreseleccionada
-      ? areaPreseleccionada.y
-      : Math.round(completedCrop?.y ?? 0);
-
-    const area_width = usandoAreaPreseleccionada
-      ? areaPreseleccionada.width
-      : Math.round(completedCrop?.width ?? 0);
-
-    const area_height = usandoAreaPreseleccionada
-      ? areaPreseleccionada.height
-      : Math.round(completedCrop?.height ?? 0);
+    const area_x = usandoAreaPreseleccionada ? areaPreseleccionada.x : Math.round(completedCrop?.x ?? 0);
+    const area_y = usandoAreaPreseleccionada ? areaPreseleccionada.y : Math.round(completedCrop?.y ?? 0);
+    const area_width = usandoAreaPreseleccionada ? areaPreseleccionada.width : Math.round(completedCrop?.width ?? 0);
+    const area_height = usandoAreaPreseleccionada ? areaPreseleccionada.height : Math.round(completedCrop?.height ?? 0);
 
     fetch("http://localhost/mapeo-plantas/backend/api/create_equipo.php", {
       method: "POST",
@@ -108,9 +98,7 @@ function ModalAgregarEquipo({
   };
 
   const handleSubmit = () => {
-    const rack_id_final = usandoAreaPreseleccionada
-      ? areaPreseleccionada.rack_id
-      : rackId;
+    const rack_id_final = usandoAreaPreseleccionada ? areaPreseleccionada.rack_id : rackId;
 
     if (!rack_id_final || !nombre.trim()) {
       alert("Debes seleccionar un rack y un nombre.");
@@ -151,21 +139,14 @@ function ModalAgregarEquipo({
   if (!visible) return null;
 
   return (
-    <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
-    }}>
-      <div style={{
-        background: "#fff", padding: "20px", borderRadius: "8px",
-        width: "600px", maxHeight: "90vh", overflowY: "auto"
-      }}>
+    <div className="modal-overlay">
+      <div className="modal-content">
         <h3>Añadir Dispositivo</h3>
 
         {!usandoAreaPreseleccionada && (
           <>
             <label>Rack destino:</label>
-            <select value={rackId} onChange={e => setRackId(e.target.value)} style={{ width: "100%" }}>
+            <select value={rackId} onChange={e => setRackId(e.target.value)} className="full-width">
               <option value="">-- Selecciona un rack --</option>
               {Array.isArray(racks) && racks.map(r => (
                 <option key={r.id} value={r.id}>Rack {r.numero || r.id}</option>
@@ -175,22 +156,22 @@ function ModalAgregarEquipo({
         )}
 
         <label>Nombre:</label>
-        <input value={nombre} onChange={e => setNombre(e.target.value)} style={{ width: "100%" }} />
+        <input value={nombre} onChange={e => setNombre(e.target.value)} className="full-width" />
 
         <label>IP:</label>
-        <input value={ip} onChange={e => setIp(e.target.value)} style={{ width: "100%" }} />
+        <input value={ip} onChange={e => setIp(e.target.value)} className="full-width" />
 
         <label>Marca:</label>
-        <input value={marca} onChange={e => setMarca(e.target.value)} style={{ width: "100%" }} />
+        <input value={marca} onChange={e => setMarca(e.target.value)} className="full-width" />
 
         <label>Modelo:</label>
-        <input value={modelo} onChange={e => setModelo(e.target.value)} style={{ width: "100%" }} />
+        <input value={modelo} onChange={e => setModelo(e.target.value)} className="full-width" />
 
         <label>Función:</label>
-        <textarea value={funcion} onChange={e => setFuncion(e.target.value)} style={{ width: "100%" }} />
+        <textarea value={funcion} onChange={e => setFuncion(e.target.value)} className="full-width" />
 
         <label>Etiquetas:</label>
-        <textarea value={etiquetas} onChange={e => setEtiquetas(e.target.value)} style={{ width: "100%" }} />
+        <textarea value={etiquetas} onChange={e => setEtiquetas(e.target.value)} className="full-width" />
 
         {!usandoAreaPreseleccionada && (
           <>
@@ -200,11 +181,28 @@ function ModalAgregarEquipo({
         )}
 
         {usandoAreaPreseleccionada ? (
-          <img
-            src={areaPreseleccionada?.foto_src}
-            alt="Rack seleccionado"
-            style={{ width: "100%", marginTop: "10px" }}
-          />
+          <div className="preview-container">
+            <img
+              ref={imgRef}
+              src={areaPreseleccionada?.foto_src}
+              alt="Rack seleccionado"
+              className="preview-img"
+              onLoad={(e) => {
+                const naturalWidth = e.currentTarget.naturalWidth;
+                const displayedWidth = e.currentTarget.clientWidth;
+                setScaleFactor(displayedWidth / naturalWidth);
+              }}
+            />
+            <div
+              className="highlight-box"
+              style={{
+                left: areaPreseleccionada.x * scaleFactor,
+                top: areaPreseleccionada.y * scaleFactor,
+                width: areaPreseleccionada.width * scaleFactor,
+                height: areaPreseleccionada.height * scaleFactor,
+              }}
+            />
+          </div>
         ) : (
           imageSrc && (
             <div style={{ marginTop: "10px" }}>
@@ -215,7 +213,7 @@ function ModalAgregarEquipo({
                 aspect={undefined}
               >
                 <img
-                  ref={(ref) => setImgRef(ref)}
+                  ref={imgRef}
                   src={imageSrc}
                   alt="selección"
                   style={{ maxWidth: "100%" }}
@@ -225,9 +223,9 @@ function ModalAgregarEquipo({
           )
         )}
 
-        <div style={{ marginTop: "10px", textAlign: "right" }}>
+        <div className="btn-footer">
           <button onClick={onClose}>Cancelar</button>
-          <button onClick={handleSubmit} style={{ marginLeft: "10px" }}>Guardar</button>
+          <button onClick={handleSubmit}>Guardar</button>
         </div>
       </div>
     </div>
