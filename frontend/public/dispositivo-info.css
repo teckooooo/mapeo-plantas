@@ -1,0 +1,111 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.foto-principal,
+.fotos-adicionales img {
+  width: 480px;
+  height: 270px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.fotos-adicionales img:hover {
+  transform: scale(1.02);
+}
+
+.info-dispositivo {
+  width: 280px;
+  position: sticky;
+  top: 20px;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+}
+
+.info-dispositivo .campo {
+  margin: 10px 0;
+}
+
+.info-dispositivo .acciones {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-dispositivo button {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-editar { background: #007bff; color: white; }
+.btn-eliminar { background: #dc3545; color: white; }
+.btn-subir { background: #28a745; color: white; }
+
+.galeria-fotos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.fotos-adicionales {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.fotos-adicionales .foto-adicional {
+  position: relative;
+}
+
+.btn-eliminar-foto {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Visor modal */
+#visorModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.9);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#visorModal img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+#visorModal .cerrar {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+}

@@ -15,7 +15,6 @@ interface Props {
   foto: { src: string };
   dispositivos: Dispositivo[];
   onNuevaArea: (area: Omit<Dispositivo, "id"> & { imagen_id: number; foto_src: string }) => void;
-
   imagenId: number;
 }
 
@@ -27,6 +26,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   const [currentBox, setCurrentBox] = useState<Omit<Dispositivo, "id"> | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [localDispositivos, setLocalDispositivos] = useState(dispositivos);
+  const [mostrarCajas, setMostrarCajas] = useState(true);
 
   useEffect(() => {
     setLocalDispositivos(dispositivos);
@@ -46,6 +46,16 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
     const observer = new ResizeObserver(updateScale);
     observer.observe(img);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const toggleCajas = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "q") {
+        setMostrarCajas(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", toggleCajas);
+    return () => window.removeEventListener("keydown", toggleCajas);
   }, []);
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -82,7 +92,6 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   const handleMouseUp = () => {
     if (drawing && currentBox) {
       onNuevaArea({ ...currentBox, imagen_id: imagenId, foto_src: foto.src });
-
     }
     setDrawing(false);
     setStart(null);
@@ -134,10 +143,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
       )}
 
       {editingId && (
-        <button
-          className="salir-edicion"
-          onClick={() => setEditingId(null)}
-        >
+        <button className="salir-edicion" onClick={() => setEditingId(null)}>
           Salir de edición ✖
         </button>
       )}
@@ -190,6 +196,8 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
             border: d.id === editingId ? "2px solid green" : "2px dashed blue",
             backgroundColor: "rgba(0, 0, 255, 0.1)",
             cursor: "pointer",
+            opacity: mostrarCajas ? 1 : 0,
+            pointerEvents: "auto", 
           }}
         />
       ))}
