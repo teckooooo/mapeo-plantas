@@ -25,6 +25,11 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   const [start, setStart] = useState<{ x: number; y: number } | null>(null);
   const [currentBox, setCurrentBox] = useState<Omit<Dispositivo, "id"> | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [localDispositivos, setLocalDispositivos] = useState(dispositivos);
+
+  useEffect(() => {
+    setLocalDispositivos(dispositivos);
+  }, [dispositivos]);
 
   useEffect(() => {
     const img = containerRef.current?.querySelector("img");
@@ -39,7 +44,6 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
     updateScale();
     const observer = new ResizeObserver(updateScale);
     observer.observe(img);
-
     return () => observer.disconnect();
   }, []);
 
@@ -83,33 +87,27 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
     setCurrentBox(null);
   };
 
-const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
-  fetch("http://localhost/mapeo-plantas/backend/api/update_equipo_posicion.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id, ...newPos }),
-  })
-    .then(async (res) => {
-      const text = await res.text(); // primero lo leemos como texto
-      try {
-        const data = JSON.parse(text); // luego intentamos parsearlo
-        if (!data.success) {
-          console.error("❌ Error en respuesta JSON:", data);
-        }
-      } catch (err) {
-        console.error("❌ Respuesta no es JSON válido:", text); // aquí vemos el HTML o el error real
-      }
+  const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
+    fetch("http://localhost/mapeo-plantas/backend/api/update_equipo_posicion.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...newPos }),
     })
-    .catch((err) => {
-      console.error("❌ Error de red al guardar posición:", err);
-    });
-};
-
-
-
-
+      .then(async (res) => {
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          if (!data.success) {
+            console.error("❌ Error en respuesta JSON:", data);
+          }
+        } catch (err) {
+          console.error("❌ Respuesta no es JSON válido:", text);
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error de red al guardar posición:", err);
+      });
+  };
 
   return (
     <div
@@ -133,7 +131,16 @@ const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
         <div className="no-image">Imagen no disponible</div>
       )}
 
-      {dispositivos.map((d, i) => (
+      {editingId && (
+        <button
+          className="salir-edicion"
+          onClick={() => setEditingId(null)}
+        >
+          Salir de edición ✖
+        </button>
+      )}
+
+      {localDispositivos.map((d, i) => (
         <Rnd
           key={d.id ?? `temp-${i}`}
           size={{ width: d.width * scale.x, height: d.height * scale.y }}
@@ -150,22 +157,30 @@ const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
           }}
           onResizeStop={(e, dir, ref, delta, pos) => {
             if (d.id === editingId) {
-              const update = {
+              const updated = {
+                ...d,
                 x: pos.x / scale.x,
                 y: pos.y / scale.y,
                 width: ref.offsetWidth / scale.x,
                 height: ref.offsetHeight / scale.y,
               };
-              handleSaveUpdate(d.id, update);
+              setLocalDispositivos((prev) =>
+                prev.map((item) => (item.id === d.id ? updated : item))
+              );
+              handleSaveUpdate(d.id, updated);
             }
           }}
           onDragStop={(e, data) => {
             if (d.id === editingId) {
-              const update = {
+              const updated = {
+                ...d,
                 x: data.x / scale.x,
                 y: data.y / scale.y,
               };
-              handleSaveUpdate(d.id, update);
+              setLocalDispositivos((prev) =>
+                prev.map((item) => (item.id === d.id ? { ...item, ...updated } : item))
+              );
+              handleSaveUpdate(d.id, updated);
             }
           }}
           style={{

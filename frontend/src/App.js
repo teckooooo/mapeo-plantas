@@ -29,6 +29,8 @@ function App() {
   const [areaSeleccionada, setAreaSeleccionada] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [expandirTodo, setExpandirTodo] = useState(null);
+
   const mostrarNotificacion = (mensaje, tipo = "success") => {
     setNotificacion({ mensaje, tipo });
     setTimeout(() => setNotificacion(null), 3000);
@@ -136,10 +138,16 @@ function App() {
           </button>
         </div>
 
+
         <EsquemaImagen
           plantaNombre={plantaActual?.nombre}
           recargar={recargarDatos}
         />
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0" }}>
+          <button onClick={() => setExpandirTodo(true)}>🔽 Expandir todos</button>
+          <button onClick={() => setExpandirTodo(false)}>🔼 Contraer todos</button>
+        </div>
 
         {gestion === "addRack" && (
           <ModalAgregarRack
@@ -205,6 +213,7 @@ function App() {
             setAreaSeleccionada(area);
             setModalVisible(true);
           }}
+          expandirTodo={expandirTodo}
         />
 
         {modalVisible && (

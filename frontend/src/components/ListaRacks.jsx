@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RackImageEditor from "./RackImageEditor.tsx";
 import './ListaRacks.css';
 
-function ListaRacks({ plantaId, recargar, onNuevaArea, setRecargarDatos }) {
+function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
   const [abiertos, setAbiertos] = useState({});
 
@@ -18,12 +18,20 @@ function ListaRacks({ plantaId, recargar, onNuevaArea, setRecargarDatos }) {
         }
 
         const estadoInicial = {};
-        data.forEach(r => { estadoInicial[r.id] = true; });
+        data.forEach(r => {
+          estadoInicial[r.id] = expandirTodo === null ? true : expandirTodo;
+        });
         setAbiertos(estadoInicial);
         setRacks(data);
       })
       .catch(err => console.error("Error al cargar racks:", err));
-  }, [plantaId, recargar]);
+  }, [plantaId, recargar, expandirTodo]);
+
+  useEffect(() => {
+    const nuevoEstado = {};
+    racks.forEach(r => { nuevoEstado[r.id] = expandirTodo; });
+    setAbiertos(nuevoEstado);
+  }, [expandirTodo, racks]);
 
   const toggleRack = (rackId) => {
     setAbiertos(prev => ({ ...prev, [rackId]: !prev[rackId] }));

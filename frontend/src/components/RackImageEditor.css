@@ -52,3 +52,21 @@
   pointer-events: none;
   z-index: 9999;
 }
+
+.salir-edicion {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: crimson;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.salir-edicion:hover {
+  background-color: darkred;
+}
