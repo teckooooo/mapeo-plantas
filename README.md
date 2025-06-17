@@ -17,7 +17,7 @@ Proyecto web para mapear gráficamente dispositivos instalados en racks por plan
 
 ```bash
 # Clona el repositorio
-git clone https://github.com/teckoooooo/mapeo-plantas.git
+git clone https://github.com/teckooooo/mapeo-plantas.git
 
 # Entra al directorio del frontend
 cd mapeo-plantas/frontend
