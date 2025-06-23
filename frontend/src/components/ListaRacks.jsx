@@ -1,49 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import RackImageEditor from "./RackImageEditor.tsx";
 import "./ListaRacks.css";
 
 function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
   const [abiertos, setAbiertos] = useState({});
-  const STORAGE_KEY = `rack_expandido_por_id_${plantaId}`;
 
-  // Cargar racks y restaurar estado expandido por ID
-// Cargar racks y restaurar estado expandido por ID
-useEffect(() => {
-  if (!plantaId) return;
+  const STORAGE_KEY = useMemo(() => `rack_expandido_por_id_${plantaId}`, [plantaId]);
 
-  const STORAGE_KEY = `rack_expandido_por_id_${plantaId}`; // Mover dentro del efecto
+  useEffect(() => {
+    if (!plantaId) return;
 
-  fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
-    .then(res => res.json())
-    .then(data => {
-      if (!Array.isArray(data)) {
-        console.error("Respuesta inesperada del backend:", data);
-        return;
-      }
+    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          console.error("Respuesta inesperada del backend:", data);
+          return;
+        }
 
-      setRacks(data);
+        setRacks(data);
 
-      let parsedState = {};
-      try {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) parsedState = JSON.parse(savedState);
-      } catch (e) {
-        console.warn("⚠️ Error al leer estado expandido:", e);
-      }
+        try {
+          const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+          const estadoInicial = {};
+          data.forEach(r => {
+            estadoInicial[r.id] = savedState[r.id] ?? true;
+          });
+          setAbiertos(estadoInicial);
+        } catch (e) {
+          console.warn("⚠️ Error al restaurar estado expandido:", e);
+        }
+      })
+      .catch(err => console.error("Error al cargar racks:", err));
+  }, [plantaId, recargar, STORAGE_KEY]);
 
-      const estadoInicial = {};
-      data.forEach(r => {
-        estadoInicial[r.id] = parsedState[r.id] ?? true;
-      });
-
-      setAbiertos(estadoInicial);
-    })
-    .catch(err => console.error("Error al cargar racks:", err));
-}, [plantaId, recargar]);
-
-
-  // Aplicar expansión global si se solicita
   useEffect(() => {
     if (expandirTodo === null || racks.length === 0) return;
 

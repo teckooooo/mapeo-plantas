@@ -18,10 +18,18 @@ try {
   // Leer y decodificar JSON
   $data = json_decode(file_get_contents("php://input"), true);
 
-  // Validación básica
-  if (!$data || !isset($data['rack_id'], $data['nombre'])) {
-    responder(["success" => false, "error" => "Rack y nombre son obligatorios"]);
-  }
+// Validación avanzada: rack_id obligatorio + (nombre o etiquetas)
+if (
+  !$data || 
+  !isset($data['rack_id']) || 
+  (empty($data['nombre']) && empty($data['etiquetas']))
+) {
+  responder([
+    "success" => false,
+    "error" => "Debe ingresar un Rack y al menos un campo: Nombre o Etiqueta"
+  ]);
+}
+
 
   // Capturar campos
   $rack_id     = $data['rack_id'];

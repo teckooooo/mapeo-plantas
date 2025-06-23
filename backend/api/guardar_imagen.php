@@ -9,8 +9,8 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $rack_id = $data['rack_id'] ?? null;
 $nombre_archivo = $data['nombre_archivo'] ?? null;
-$base64_raw = explode(',', $data['data_larga'])[1]; // quita encabezado
-$data_larga = base64_decode($base64_raw); // guarda como binario puro
+$base64_raw = explode(',', $data['data_larga'])[1]; 
+$data_larga = base64_decode($base64_raw);
 
 
 if (!$rack_id || !$nombre_archivo || !$data_larga) {

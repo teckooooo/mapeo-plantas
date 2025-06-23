@@ -22,7 +22,7 @@ try {
   // Guardar dispositivos asociados a la imagen
   foreach ($data['dispositivos'] as $d) {
     $stmt = $pdo->prepare("INSERT INTO equipos (rack_imagen_id, nombre, x, y, width, height)
-                           VALUES (?, ?, ?, ?, ?, ?)");
+                          VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$imagen_id, $d['nombre'], $d['x'], $d['y'], $d['width'], $d['height']]);
   }
 

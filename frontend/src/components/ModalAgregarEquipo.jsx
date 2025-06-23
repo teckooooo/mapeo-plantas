@@ -100,8 +100,13 @@ function ModalAgregarEquipo({
   const handleSubmit = () => {
     const rack_id_final = usandoAreaPreseleccionada ? areaPreseleccionada.rack_id : rackId;
 
-    if (!rack_id_final || !nombre.trim()) {
-      alert("Debes seleccionar un rack y un nombre.");
+    if (!rack_id_final) {
+      alert("Debes seleccionar un rack.");
+      return;
+    }
+
+    if (!nombre.trim() && !etiquetas.trim()) {
+      alert("Debes ingresar al menos un campo: nombre o etiqueta.");
       return;
     }
 
