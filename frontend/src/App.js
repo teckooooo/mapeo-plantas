@@ -30,6 +30,56 @@ function App() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const [expandirTodo, setExpandirTodo] = useState(null);
+  const [verInstrucciones, setVerInstrucciones] = useState(false);
+
+  // Al inicio del componente App
+const [nuevaPlanta, setNuevaPlanta] = useState("");
+
+// Función para agregar una planta
+const handleAgregarPlanta = () => {
+  if (!nuevaPlanta.trim()) return;
+
+  fetch("http://localhost/mapeo-plantas/backend/api/insert_planta.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre: nuevaPlanta.trim() })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        mostrarNotificacion("✅ Planta agregada");
+        setNuevaPlanta("");
+        // ✅ Recarga completa de la página
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        alert("Error al agregar planta.");
+      }
+    });
+};
+
+
+
+// Función para eliminar planta
+const handleEliminarPlanta = (id) => {
+  if (!window.confirm("¿Eliminar esta planta?")) return;
+
+  fetch("http://localhost/mapeo-plantas/backend/api/delete_planta.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        mostrarNotificacion("🗑️ Planta eliminada");
+        setTimeout(() => window.location.reload(), 500); // ✅ Recarga
+      } else {
+        alert("Error al eliminar planta.");
+      }
+    });
+};
+
+
 
   const mostrarNotificacion = (mensaje, tipo = "success") => {
     setNotificacion({ mensaje, tipo });
@@ -51,33 +101,30 @@ function App() {
       });
   }, []);
 
-useEffect(() => {
-  if (!plantaSeleccionada) return;
+  useEffect(() => {
+    if (!plantaSeleccionada) return;
 
-  fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaSeleccionada}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.success && Array.isArray(data.data)) {
-        setRacksDisponibles(data.data);
-      } else {
-        console.error("Respuesta inesperada:", data);
+    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaSeleccionada}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          setRacksDisponibles(data.data);
+        } else {
+          console.error("Respuesta inesperada:", data);
+          setRacksDisponibles([]);
+        }
+      })
+      .catch(err => {
+        console.error("Error al obtener racks:", err);
         setRacksDisponibles([]);
-      }
-    })
-    .catch(err => {
-      console.error("Error al obtener racks:", err);
-      setRacksDisponibles([]);
-    });
+      });
 
-  // ✅ Mover aquí para que sea recalculado dinámicamente
-  const STORAGE_KEY = `rack_expandido_${plantaSeleccionada}`;
-  const savedExpandir = localStorage.getItem(STORAGE_KEY);
-  if (savedExpandir !== null) {
-    setExpandirTodo(savedExpandir === "true");
-  }
-
-}, [plantaSeleccionada, recargarDatos]);
-
+    const STORAGE_KEY = `rack_expandido_${plantaSeleccionada}`;
+    const savedExpandir = localStorage.getItem(STORAGE_KEY);
+    if (savedExpandir !== null) {
+      setExpandirTodo(savedExpandir === "true");
+    }
+  }, [plantaSeleccionada, recargarDatos]);
 
   useEffect(() => {
     if (gestion === "addRack") setModalRackVisible(true);
@@ -117,14 +164,13 @@ useEffect(() => {
       });
   };
 
-const handleExpandir = (estado) => {
-  setExpandirTodo(estado);
-  if (plantaSeleccionada) {
-    const STORAGE_KEY = `rack_expandido_${plantaSeleccionada}`;
-    localStorage.setItem(STORAGE_KEY, estado.toString());
-  }
-};
-
+  const handleExpandir = (estado) => {
+    setExpandirTodo(estado);
+    if (plantaSeleccionada) {
+      const STORAGE_KEY = `rack_expandido_${plantaSeleccionada}`;
+      localStorage.setItem(STORAGE_KEY, estado.toString());
+    }
+  };
 
   return (
     <div>
@@ -132,25 +178,25 @@ const handleExpandir = (estado) => {
         plantas={plantas}
         plantaSeleccionada={plantaSeleccionada}
         setPlantaSeleccionada={setPlantaSeleccionada}
+        setGestion={setGestion}
+        setModalImagenVisible={setModalImagenVisible}
+        setVerInstrucciones={setVerInstrucciones}
+        verInstrucciones={verInstrucciones}
       />
 
       <main style={{ padding: "20px" }}>
         <h2>Esquema de racks para: {plantaActual?.nombre || "..."}</h2>
 
-        <div style={{ display: "flex", gap: "10px", margin: "20px 0" }}>
-          <button className={`gestion-btn ${gestion === "addRack" ? "active" : ""}`} onClick={() => setGestion("addRack")}>
-            ➕ Añadir Rack
-          </button>
-
-          <button className="gestion-btn" onClick={() => setModalImagenVisible(true)}>📷 Agregar Imagen</button>
-
-          <button className={`gestion-btn ${gestion === "deleteRack" ? "active" : ""}`} onClick={() => setGestion("deleteRack")}>
-            🗑️ Borrar Rack
-          </button>
-          <button className={`gestion-btn ${gestion === "deleteEquipo" ? "active" : ""}`} onClick={() => setGestion("deleteEquipo")}>
-            🗑️ Borrar Dispositivo
-          </button>
-        </div>
+        {verInstrucciones && (
+          <div className="instrucciones-box">
+            <strong>📌 Instrucciones de uso:</strong>
+            <ul>
+              <li><b>SHIFT + Q:</b> muestra u oculta las áreas delimitadas</li>
+              <li><b>SHIFT + clic izquierdo</b> y arrastrar sobre la imagen para agregar un nuevo dispositivo</li>
+              <li><b>Ctrl + clic izquierdo:</b> sobre un dispositivo para editar su área</li>
+            </ul>
+          </div>
+        )}
 
         <EsquemaImagen
           plantaNombre={plantaActual?.nombre}
@@ -285,6 +331,34 @@ const handleExpandir = (estado) => {
             </div>
           </div>
         )}
+
+        <div style={{ marginTop: "40px", borderTop: "1px solid #ccc", paddingTop: "20px" }}>
+  <h3>🛠️ Gestión de Plantas</h3>
+<input
+  type="text"
+  value={nuevaPlanta}
+  onChange={(e) => setNuevaPlanta(e.target.value)}
+  placeholder="Nombre de nueva planta"
+/>
+
+  <button onClick={handleAgregarPlanta}>➕ Agregar Planta</button>
+
+  <ul style={{ marginTop: "15px" }}>
+    {plantas.map(p => (
+      <li key={p.id}>
+        {p.nombre}
+        <button
+          style={{ marginLeft: "10px", color: "red" }}
+          onClick={() => handleEliminarPlanta(p.id)}
+        >
+          🗑️ Eliminar
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+
+
       </main>
 
       {notificacion && (
