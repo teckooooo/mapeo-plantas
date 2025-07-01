@@ -7,6 +7,8 @@ import ModalEliminarRack from "./components/ModalEliminarRack";
 import ModalEliminarEquipo from "./components/ModalEliminarEquipo";
 import Notificacion from "./components/Notificacion";
 import ListaRacks from "./components/ListaRacks";
+import ModalGestionPlantas from "./components/ModalGestionPlantas";
+
 
 function App() {
   const [plantas, setPlantas] = useState([]);
@@ -32,8 +34,9 @@ function App() {
   const [expandirTodo, setExpandirTodo] = useState(null);
   const [verInstrucciones, setVerInstrucciones] = useState(false);
 
-  // Al inicio del componente App
-const [nuevaPlanta, setNuevaPlanta] = useState("");
+  const [modalPlantasVisible, setModalPlantasVisible] = useState(false);
+
+  const [nuevaPlanta, setNuevaPlanta] = useState("");
 
 // Función para agregar una planta
 const handleAgregarPlanta = () => {
@@ -78,6 +81,8 @@ const handleEliminarPlanta = (id) => {
       }
     });
 };
+
+
 
 
 
@@ -172,6 +177,24 @@ const handleEliminarPlanta = (id) => {
     }
   };
 
+  const handleEditarPlanta = (id, nuevoNombre) => {
+  fetch("http://localhost/mapeo-plantas/backend/api/update_planta.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, nombre: nuevoNombre })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        mostrarNotificacion("✏️ Nombre actualizado");
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        alert("Error al editar nombre.");
+      }
+    });
+};
+
+
   return (
     <div>
       <Navbar
@@ -182,6 +205,7 @@ const handleEliminarPlanta = (id) => {
         setModalImagenVisible={setModalImagenVisible}
         setVerInstrucciones={setVerInstrucciones}
         verInstrucciones={verInstrucciones}
+        setMostrarModalPlantas={setModalPlantasVisible}
       />
 
       <main style={{ padding: "20px" }}>
@@ -200,8 +224,9 @@ const handleEliminarPlanta = (id) => {
 
         <EsquemaImagen
           plantaNombre={plantaActual?.nombre}
-          recargar={recargarDatos}
+          esquemaBase64={plantaActual?.esquema_base64}
         />
+
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0" }}>
           <button onClick={() => handleExpandir(true)}>🔽 Expandir todos</button>
@@ -332,31 +357,21 @@ const handleEliminarPlanta = (id) => {
           </div>
         )}
 
-        <div style={{ marginTop: "40px", borderTop: "1px solid #ccc", paddingTop: "20px" }}>
-  <h3>🛠️ Gestión de Plantas</h3>
-<input
-  type="text"
-  value={nuevaPlanta}
-  onChange={(e) => setNuevaPlanta(e.target.value)}
-  placeholder="Nombre de nueva planta"
+<ModalGestionPlantas
+  visible={modalPlantasVisible}
+  onClose={() => setModalPlantasVisible(false)}
+  nuevaPlanta={nuevaPlanta}
+  setNuevaPlanta={setNuevaPlanta}
+  plantas={plantas}
+  onAgregar={handleAgregarPlanta}
+  onEliminar={handleEliminarPlanta}
+  onEditar={handleEditarPlanta}
+  onRecargar={() => {
+    fetch("http://localhost/mapeo-plantas/backend/api/get_plantas.php")
+      .then(res => res.json())
+      .then(setPlantas);
+  }}
 />
-
-  <button onClick={handleAgregarPlanta}>➕ Agregar Planta</button>
-
-  <ul style={{ marginTop: "15px" }}>
-    {plantas.map(p => (
-      <li key={p.id}>
-        {p.nombre}
-        <button
-          style={{ marginLeft: "10px", color: "red" }}
-          onClick={() => handleEliminarPlanta(p.id)}
-        >
-          🗑️ Eliminar
-        </button>
-      </li>
-    ))}
-  </ul>
-</div>
 
 
       </main>

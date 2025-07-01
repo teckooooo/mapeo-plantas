@@ -1,7 +1,7 @@
 import logo from "../assets/logo.png";
 import { useState } from "react";
 
-function Navbar({ plantas, plantaSeleccionada, setPlantaSeleccionada, setGestion, setModalImagenVisible, setVerInstrucciones, verInstrucciones }) {
+function Navbar({ plantas, plantaSeleccionada, setPlantaSeleccionada, setGestion, setModalImagenVisible, setVerInstrucciones, verInstrucciones,setMostrarModalPlantas }) {
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   return (
@@ -58,6 +58,10 @@ function Navbar({ plantas, plantaSeleccionada, setPlantaSeleccionada, setGestion
             <button onClick={() => { setVerInstrucciones(prev => !prev); setDropdownVisible(false); }}>
               {verInstrucciones ? "🔽 Ocultar instrucciones" : "❓ Mostrar instrucciones"}
             </button>
+            <button onClick={() => { setMostrarModalPlantas(true); setDropdownVisible(false); }}>
+  🛠️ Gestionar Plantas
+</button>
+
           </div>
         )}
       </div>
