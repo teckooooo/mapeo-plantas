@@ -38,6 +38,8 @@ function App() {
 
   const [nuevaPlanta, setNuevaPlanta] = useState("");
 
+  const [anchoEsquema, setAnchoEsquema] = useState(30);
+
 // Función para agregar una planta
 const handleAgregarPlanta = () => {
   if (!nuevaPlanta.trim()) return;
@@ -60,6 +62,13 @@ const handleAgregarPlanta = () => {
     });
 };
 
+const aumentarEsquema = () => {
+  setAnchoEsquema(prev => Math.min(prev + 10, 100));
+};
+
+const reducirEsquema = () => {
+  setAnchoEsquema(prev => Math.max(prev - 10, 10));
+};
 
 
 // Función para eliminar planta
@@ -222,10 +231,16 @@ const handleEliminarPlanta = (id) => {
           </div>
         )}
 
-        <EsquemaImagen
-          plantaNombre={plantaActual?.nombre}
-          esquemaBase64={plantaActual?.esquema_base64}
-        />
+
+<EsquemaImagen
+  plantaNombre={plantaActual?.nombre}
+  esquemaBase64={plantaActual?.esquema_base64}
+  anchoPorcentaje={anchoEsquema}
+  onAumentar={aumentarEsquema}
+  onReducir={reducirEsquema}
+/>
+
+
 
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0" }}>

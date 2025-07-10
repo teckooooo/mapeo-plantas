@@ -1,12 +1,21 @@
-function EsquemaImagen({ plantaNombre, esquemaBase64 }) {
+import "./EsquemaImagen.css";
+
+function EsquemaImagen({ plantaNombre, esquemaBase64, anchoPorcentaje, onAumentar, onReducir }) {
   if (!esquemaBase64) return null;
 
   return (
-    <div style={{ marginTop: "30px" }}>
+    <div className="esquema-contenedor">
+      <div className="esquema-controles">
+        <button onClick={onReducir}>−</button>
+        <span>{anchoPorcentaje}%</span>
+        <button onClick={onAumentar}>＋</button>
+      </div>
+
       <img
         src={esquemaBase64}
         alt={`Esquema ${plantaNombre}`}
-        style={{ maxWidth: "50%", border: "1px solid #ccc", borderRadius: "8px" }}
+        className="esquema-img"
+        style={{ maxWidth: `${anchoPorcentaje}%` }}
       />
     </div>
   );

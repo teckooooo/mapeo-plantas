@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./ModalGestionPlantas.css";
 
 function ModalGestionPlantas({
   visible,
@@ -9,7 +10,7 @@ function ModalGestionPlantas({
   onAgregar,
   onEliminar,
   onEditar,
-  onRecargar // ✅ Nuevo callback
+  onRecargar
 }) {
   const [editandoId, setEditandoId] = useState(null);
   const [nombreEditado, setNombreEditado] = useState("");
@@ -28,7 +29,7 @@ function ModalGestionPlantas({
     onEditar(editandoId, nombreEditado.trim());
     setEditandoId(null);
     setNombreEditado("");
-    onRecargar?.(); // ✅ recarga luego de editar
+    onRecargar?.();
   };
 
   const handleFileChange = (plantaId, e) => {
@@ -59,7 +60,7 @@ function ModalGestionPlantas({
         setLoading(false);
         if (data.success) {
           alert("✅ Imagen de esquema subida correctamente.");
-          onRecargar?.(); // ✅ recarga
+          onRecargar?.();
         } else {
           alert("❌ Error al subir esquema.");
           console.error(data);
@@ -84,7 +85,7 @@ function ModalGestionPlantas({
       .then((data) => {
         if (data.success) {
           alert("🗑️ Esquema eliminado correctamente.");
-          onRecargar?.(); // ✅ recarga
+          onRecargar?.();
         } else {
           alert("❌ Error al eliminar esquema.");
           console.error(data);
@@ -97,15 +98,8 @@ function ModalGestionPlantas({
   };
 
   return (
-    <div className="modal" style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
-      justifyContent: "center", alignItems: "center", zIndex: 1000
-    }}>
-      <div style={{
-        background: "#fff", padding: "20px", borderRadius: "8px",
-        width: "500px", maxHeight: "90vh", overflowY: "auto"
-      }}>
+    <div className="modal-planta">
+      <div className="modal-content">
         <h3>🛠️ Gestión de Plantas</h3>
 
         <input
@@ -113,53 +107,40 @@ function ModalGestionPlantas({
           value={nuevaPlanta}
           onChange={(e) => setNuevaPlanta(e.target.value)}
           placeholder="Nombre de nueva planta"
-          style={{ width: "100%", marginBottom: "10px" }}
         />
-        <button onClick={onAgregar} style={{ marginBottom: "20px" }}>
-          ➕ Agregar Planta
-        </button>
+        <button onClick={onAgregar}>➕ Agregar Planta</button>
 
         <ul>
           {plantas.map((p) => (
-            <li key={p.id} style={{ marginBottom: "20px" }}>
+            <li key={p.id}>
               {editandoId === p.id ? (
                 <>
                   <input
                     type="text"
                     value={nombreEditado}
                     onChange={(e) => setNombreEditado(e.target.value)}
-                    style={{ marginRight: "5px" }}
                   />
                   <button onClick={guardarEdicion}>💾 Guardar</button>
-                  <button onClick={() => setEditandoId(null)} style={{ marginLeft: "5px" }}>❌ Cancelar</button>
+                  <button onClick={() => setEditandoId(null)}>❌ Cancelar</button>
                 </>
               ) : (
                 <>
                   <strong>{p.nombre}</strong>
-                  <button onClick={() => comenzarEdicion(p)} style={{ marginLeft: "10px" }}>✏️ Editar</button>
-                  <button onClick={() => onEliminar(p.id)} style={{ marginLeft: "5px", color: "red" }}>
-                    🗑️ Eliminar
-                  </button>
+                  <button onClick={() => comenzarEdicion(p)}>✏️ Editar</button>
+                  <button onClick={() => onEliminar(p.id)} className="eliminar">🗑️</button>
                 </>
               )}
 
-              <div style={{ marginTop: "10px" }}>
+              <div className="esquema-actions">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleFileChange(p.id, e)}
                 />
-                <button
-                  onClick={() => subirEsquema(p.id)}
-                  style={{ marginLeft: "5px" }}
-                  disabled={loading}
-                >
+                <button onClick={() => subirEsquema(p.id)} disabled={loading}>
                   {loading ? "Subiendo..." : "📤 Subir Esquema"}
                 </button>
-                <button
-                  onClick={() => eliminarEsquema(p.id)}
-                  style={{ marginLeft: "5px", color: "darkred" }}
-                >
+                <button onClick={() => eliminarEsquema(p.id)} className="eliminar">
                   🗑️ Quitar Esquema
                 </button>
               </div>
@@ -167,13 +148,11 @@ function ModalGestionPlantas({
           ))}
         </ul>
 
-        <div style={{ marginTop: "20px", textAlign: "right" }}>
+        <div className="acciones-finales">
           <button onClick={() => {
-            onRecargar?.(); // ✅ recarga al salir del modal también
+            onRecargar?.();
             onClose();
-          }}>
-            Cerrar
-          </button>
+          }}>Cerrar</button>
         </div>
       </div>
     </div>

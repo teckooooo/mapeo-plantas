@@ -1,0 +1,39 @@
+.esquema-contenedor {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.esquema-controles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.esquema-controles button {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.esquema-controles button:hover {
+  background-color: #ccc;
+}
+
+.esquema-controles span {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.esquema-img {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: max-width 0.3s ease;
+}
