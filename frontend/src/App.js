@@ -62,6 +62,8 @@ const handleAgregarPlanta = () => {
     });
 };
 
+
+
 const aumentarEsquema = () => {
   setAnchoEsquema(prev => Math.min(prev + 10, 100));
 };
@@ -152,30 +154,46 @@ const handleEliminarPlanta = (id) => {
       alert("Selecciona un rack e imagen.");
       return;
     }
+console.log("📏 Longitud base64:", imagenArchivo.length);
+
+if (imagenArchivo.length > 8_000_000) {
+  alert("⚠️ La imagen es demasiado pesada incluso comprimida. Por favor usa una más liviana o más comprimida.");
+  return;
+}
+
 
     fetch("http://localhost/mapeo-plantas/backend/api/guardar_imagen.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        rack_id: rackDestino,
-        nombre_archivo: `imagen_${Date.now()}.jpg`,
-        data_larga: imagenArchivo
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          mostrarNotificacion("📸 Imagen añadida al rack");
-          setModalImagenVisible(false);
-          setRecargarDatos(prev => !prev);
-        } else {
-          alert("Error al subir imagen.");
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Fallo al subir imagen.");
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    rack_id: rackDestino,
+    nombre_archivo: `imagen_${Date.now()}.jpg`,
+    data_larga: imagenArchivo
+  })
+})
+  .then(async res => {
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text);
+      if (json.success) {
+        mostrarNotificacion("📸 Imagen añadida al rack");
+        setModalImagenVisible(false);
+        setRecargarDatos(prev => !prev);
+      } else {
+        alert("❌ Error del servidor:\n" + json.error);
+      }
+    } catch (err) {
+      console.error("⚠️ Respuesta no válida JSON:", text);
+      alert("❌ Error inesperado:\n" + text);
+    }
+  })
+  .catch(err => {
+    console.error("❌ Error al enviar:", err);
+    alert("❌ Fallo al subir imagen:\n" + err.message);
+  });
+
+
+
   };
 
   const handleExpandir = (estado) => {
@@ -356,13 +374,52 @@ const handleEliminarPlanta = (id) => {
               </select>
 
               <label>Imagen:</label>
-              <input type="file" accept="image/*" onChange={(e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => setImagenArchivo(reader.result);
-                reader.readAsDataURL(file);
-              }} />
+              <input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+      img.onload = function () {
+        const MAX_WIDTH = 1920;
+        const MAX_HEIGHT = 4000;
+
+        const widthScale = MAX_WIDTH / img.width;
+        const heightScale = MAX_HEIGHT / img.height;
+        const scale = Math.min(1, widthScale, heightScale);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const compressedData = canvas.toDataURL("image/jpeg", 0.7);
+
+        // Validar tamaño (6 MB en base64)
+        if (compressedData.length > 6_000_000) {
+          alert("⚠️ Imagen muy grande incluso después de comprimir (más de 6MB base64). Usa una más liviana.");
+          return;
+        }
+
+        setImagenArchivo(compressedData);
+      };
+      img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  }}
+/>
+
+
+
+
 
               <div style={{ marginTop: "10px", textAlign: "right" }}>
                 <button onClick={() => setModalImagenVisible(false)}>Cancelar</button>
