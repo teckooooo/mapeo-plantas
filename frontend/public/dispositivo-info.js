@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderVista(data) {
+  console.log("👀 Vista renderizada con:", data);
+
   const infoContenedor = document.getElementById("info");
   let contenidoHTML = "";
 
@@ -73,14 +75,93 @@ function renderVista(data) {
   const galeria = document.getElementById("galeria");
   galeria.innerHTML = "";
 
-  if (data.foto) {
-    const img = document.createElement("img");
-    img.src = data.foto;
+  // Recorte de imagen base64
+  function mostrarRecorte(foto, x, y, width, height) {
+    console.log("🧪 Recorte solicitado con:", { x, y, width, height });
+
+    if (!foto || typeof foto !== "string" || !foto.startsWith("data:image")) {
+      console.warn("⚠️ Foto inválida o vacía:", foto);
+      mostrarCompleta(foto);
+      return;
+    }
+
+    try {
+      const base64Data = foto.split(',')[1];
+      const mimeType = foto.match(/^data:(.*?);/)[1];
+      const byteCharacters = atob(base64Data);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = Array.from(slice).map(char => char.charCodeAt(0));
+        byteArrays.push(new Uint8Array(byteNumbers));
+      }
+
+      const blob = new Blob(byteArrays, { type: mimeType });
+      const blobUrl = URL.createObjectURL(blob);
+      const img = new Image();
+
+      img.onload = () => {
+        console.log("✅ Imagen cargada");
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+
+        const recortada = new Image();
+        recortada.src = canvas.toDataURL("image/jpeg");
+        recortada.className = "foto-principal";
+        recortada.onclick = () => mostrarEnGrande(recortada.src);
+        galeria.appendChild(recortada);
+
+        URL.revokeObjectURL(blobUrl);
+      };
+
+      img.onerror = () => {
+        console.error("❌ No se pudo cargar imagen desde blob");
+        mostrarCompleta(foto);
+      };
+
+      img.src = blobUrl;
+
+    } catch (e) {
+      console.error("💥 Error al procesar imagen base64:", e);
+      mostrarCompleta(foto);
+    }
+  }
+
+  // Imagen completa (fallback)
+  function mostrarCompleta(foto) {
+    const img = new Image();
+    img.src = foto;
     img.className = "foto-principal";
-    img.onclick = () => mostrarEnGrande(img.src);
+    img.onclick = () => mostrarEnGrande(foto);
     galeria.appendChild(img);
   }
 
+  // Usar las coordenadas correctas del backend (area_x, area_y, area_width, area_height)
+  const x = Number(data.area_x);
+  const y = Number(data.area_y);
+  const width = Number(data.area_width);
+  const height = Number(data.area_height);
+
+  if (data.foto) {
+    if (
+      !isNaN(x) && !isNaN(y) &&
+      !isNaN(width) && width > 0 &&
+      !isNaN(height) && height > 0
+    ) {
+      console.log("📸 Ejecutando mostrarRecorte()", x, y, width, height);
+      mostrarRecorte(data.foto, x, y, width, height);
+    } else {
+      console.warn("⚠️ Coordenadas inválidas. Mostrando imagen completa.");
+      mostrarCompleta(data.foto);
+    }
+  }
+
+  // Fotos adicionales
   const contenedorExtras = document.createElement("div");
   contenedorExtras.className = "fotos-adicionales";
 
@@ -104,6 +185,8 @@ function renderVista(data) {
 
   galeria.appendChild(contenedorExtras);
 }
+
+
 
 function mostrarEnGrande(src) {
   document.getElementById("visorImagen").src = src;

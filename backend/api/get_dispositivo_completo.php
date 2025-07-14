@@ -21,8 +21,17 @@ if (!$equipo) {
   exit;
 }
 
+// Convertir campos de coordenadas a enteros si existen
+foreach (['x', 'y', 'width', 'height'] as $key) {
+  if (isset($equipo[$key])) {
+    $equipo[$key] = (int) $equipo[$key];
+  } else {
+    $equipo[$key] = null;
+  }
+}
+
 // Obtener imagen principal si existe
-if ($equipo['imagen_id']) {
+if (!empty($equipo['imagen_id'])) {
   $stmtImg = $pdo->prepare("SELECT data_larga FROM imagenes WHERE id = ?");
   $stmtImg->execute([$equipo['imagen_id']]);
   $imagen = $stmtImg->fetch(PDO::FETCH_ASSOC);
@@ -36,12 +45,12 @@ if ($equipo['imagen_id']) {
   $equipo['foto'] = null;
 }
 
-// Obtener fotos adicionales desde la tabla fotos_dispositivo
+// Obtener fotos adicionales
 $stmtExtras = $pdo->prepare("SELECT id, data_larga FROM fotos_dispositivo WHERE dispositivo_id = ?");
 $stmtExtras->execute([$id]);
 $fotos = $stmtExtras->fetchAll(PDO::FETCH_ASSOC);
 
-// Convertir las imágenes a base64
+// Convertir imágenes a base64
 foreach ($fotos as &$foto) {
   $foto['ruta'] = 'data:image/jpeg;base64,' . base64_encode($foto['data_larga']);
   unset($foto['data_larga']);

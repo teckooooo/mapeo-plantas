@@ -5,17 +5,19 @@ body {
   display: flex;
   gap: 30px;
   align-items: flex-start;
+  background-color: #f0f2f5;
 }
 
 .foto-principal,
 .fotos-adicionales img {
-  width: 480px;
-  height: 270px;
+  max-width: 100%;
+  max-height: 480px;
   object-fit: cover;
   border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: transform 0.2s;
+  display: block;
 }
 
 .fotos-adicionales img:hover {
@@ -23,17 +25,35 @@ body {
 }
 
 .info-dispositivo {
-  width: 280px;
+  width: 300px;
   position: sticky;
   top: 20px;
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.info-dispositivo h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .info-dispositivo .campo {
   margin: 10px 0;
+  font-size: 14px;
+  color: #222;
+}
+
+.info-dispositivo input,
+.info-dispositivo textarea {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 4px;
+  font-size: 14px;
 }
 
 .info-dispositivo .acciones {
@@ -44,16 +64,22 @@ body {
 }
 
 .info-dispositivo button {
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .btn-editar { background: #007bff; color: white; }
+.btn-editar:hover { background: #0069d9; }
+
 .btn-eliminar { background: #dc3545; color: white; }
+.btn-eliminar:hover { background: #c82333; }
+
 .btn-subir { background: #28a745; color: white; }
+.btn-subir:hover { background: #218838; }
 
 .galeria-fotos {
   display: flex;
@@ -83,6 +109,7 @@ body {
   padding: 2px 6px;
   cursor: pointer;
   font-size: 13px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
 
 /* Visor modal */
@@ -90,7 +117,7 @@ body {
   display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0, 0, 0, 0.9);
   justify-content: center;
   align-items: center;
   z-index: 9999;
@@ -99,6 +126,8 @@ body {
 #visorModal img {
   max-width: 90%;
   max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 #visorModal .cerrar {
@@ -108,4 +137,5 @@ body {
   font-size: 28px;
   color: white;
   cursor: pointer;
+  font-weight: bold;
 }
