@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
   const [racks, setRacks] = useState([]);
   const [rackId, setRackId] = useState("");
@@ -8,7 +12,7 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
 
   useEffect(() => {
     if (plantaId) {
-      fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaId}`)
+      fetch(`${BASE_URL}/api/get_racks_by_planta.php?planta_id=${plantaId}`)
         .then(res => res.json())
         .then(json => {
           if (json.success && Array.isArray(json.data)) {
@@ -27,7 +31,7 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
 
   useEffect(() => {
     if (rackId) {
-      fetch(`http://localhost/mapeo-plantas/backend/api/get_equipos_by_rack.php?rack_id=${rackId}`)
+      fetch(`${BASE_URL}/api/get_equipos_by_rack.php?rack_id=${rackId}`)
         .then(res => res.json())
         .then(json => {
           if (json.success && Array.isArray(json.data)) {
@@ -51,7 +55,7 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
   const handleDelete = () => {
     if (!equipoId) return alert("Selecciona un dispositivo");
 
-    fetch("http://localhost/mapeo-plantas/backend/api/delete_equipo.php", {
+    fetch(`${BASE_URL}/api/delete_equipo.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: equipoId })
@@ -77,14 +81,14 @@ function ModalEliminarEquipo({ plantaId, visible, onClose, onSuccess }) {
       top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: "rgba(0,0,0,0.5)",
       display: "flex", justifyContent: "center", alignItems: "center",
-      zIndex: 9999 // 🛡️ asegura que el modal esté por encima de todo
+      zIndex: 9999
     }}>
       <div style={{
         background: "#fff",
         padding: "20px",
         borderRadius: "8px",
         width: "350px",
-        zIndex: 10000 // 🔒 asegura prioridad incluso dentro del modal
+        zIndex: 10000
       }}>
         <h3>Eliminar Dispositivo</h3>
 

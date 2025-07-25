@@ -2,6 +2,16 @@ import React, { useRef, useState, useEffect, MouseEvent } from "react";
 import { Rnd } from "react-rnd";
 import "./RackImageEditor.css";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
+  
+
+const FRONTEND_BASE = window.location.pathname.includes("/mapeo-plantas/frontend")
+  ? "/mapeo-plantas/frontend"
+  : "";
+
 interface Dispositivo {
   id?: number;
   x: number;
@@ -99,7 +109,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   };
 
   const handleSaveUpdate = (id: number, newPos: Partial<Dispositivo>) => {
-    fetch("http://localhost/mapeo-plantas/backend/api/update_equipo_posicion.php", {
+    fetch(`${BASE_URL}/api/update_equipo_posicion.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...newPos }),
@@ -160,7 +170,8 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
               e.stopPropagation();
               setEditingId(d.id);
             } else if (d.id && d.id !== editingId) {
-              window.open(`/dispositivo-info.html?id=${d.id}`, "_blank");
+              window.open(`${window.location.origin}/mapeo-plantas/frontend/dispositivo/${d.id}`, "_blank");
+
             }
           }}
           onResizeStop={(e, dir, ref, delta, pos) => {
@@ -197,7 +208,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
             backgroundColor: "rgba(0, 0, 255, 0.1)",
             cursor: "pointer",
             opacity: mostrarCajas ? 1 : 0,
-            pointerEvents: "auto", 
+            pointerEvents: "auto",
           }}
         />
       ))}

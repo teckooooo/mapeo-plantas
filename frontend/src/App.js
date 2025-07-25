@@ -8,9 +8,14 @@ import ModalEliminarEquipo from "./components/ModalEliminarEquipo";
 import Notificacion from "./components/Notificacion";
 import ListaRacks from "./components/ListaRacks";
 import ModalGestionPlantas from "./components/ModalGestionPlantas";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import DispositivoInfo from "./components/DispositivoInfo";
+
+const basename = "/mapeo-plantas/frontend";
 
 
-function App() {
+
+function PrincipalApp() {
   const [plantas, setPlantas] = useState([]);
   const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
   const [gestion, setGestion] = useState("");
@@ -40,11 +45,13 @@ function App() {
 
   const [anchoEsquema, setAnchoEsquema] = useState(30);
 
+  
+
 // Función para agregar una planta
 const handleAgregarPlanta = () => {
   if (!nuevaPlanta.trim()) return;
 
-  fetch("http://localhost/mapeo-plantas/backend/api/insert_planta.php", {
+  fetch(`${BASE_URL}/api/insert_planta.php`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ nombre: nuevaPlanta.trim() })
@@ -54,13 +61,16 @@ const handleAgregarPlanta = () => {
       if (data.success) {
         mostrarNotificacion("✅ Planta agregada");
         setNuevaPlanta("");
-        // ✅ Recarga completa de la página
         setTimeout(() => window.location.reload(), 500);
       } else {
         alert("Error al agregar planta.");
       }
     });
 };
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 
 
 
@@ -77,7 +87,7 @@ const reducirEsquema = () => {
 const handleEliminarPlanta = (id) => {
   if (!window.confirm("¿Eliminar esta planta?")) return;
 
-  fetch("http://localhost/mapeo-plantas/backend/api/delete_planta.php", {
+  fetch(`${BASE_URL}/api/delete_planta.php`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id })
@@ -105,7 +115,10 @@ const handleEliminarPlanta = (id) => {
   const plantaActual = plantas.find((p) => p.id === plantaSeleccionada);
 
   useEffect(() => {
-    fetch("http://localhost/mapeo-plantas/backend/api/get_plantas.php")
+    fetch(`${BASE_URL}/api/get_plantas.php`)
+
+
+
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -120,7 +133,7 @@ const handleEliminarPlanta = (id) => {
   useEffect(() => {
     if (!plantaSeleccionada) return;
 
-    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaSeleccionada}`)
+    fetch(`${BASE_URL}/api/get_racks_by_planta.php?planta_id=${plantaSeleccionada}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && Array.isArray(data.data)) {
@@ -162,7 +175,7 @@ if (imagenArchivo.length > 8_000_000) {
 }
 
 
-    fetch("http://localhost/mapeo-plantas/backend/api/guardar_imagen.php", {
+  fetch(`${BASE_URL}/api/guardar_imagen.php`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -205,7 +218,7 @@ if (imagenArchivo.length > 8_000_000) {
   };
 
   const handleEditarPlanta = (id, nuevoNombre) => {
-  fetch("http://localhost/mapeo-plantas/backend/api/update_planta.php", {
+  fetch(`${BASE_URL}/api/update_planta.php`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, nombre: nuevoNombre })
@@ -439,7 +452,8 @@ if (imagenArchivo.length > 8_000_000) {
   onEliminar={handleEliminarPlanta}
   onEditar={handleEditarPlanta}
   onRecargar={() => {
-    fetch("http://localhost/mapeo-plantas/backend/api/get_plantas.php")
+    fetch(`${BASE_URL}/api/get_plantas.php`)
+
       .then(res => res.json())
       .then(setPlantas);
   }}
@@ -453,6 +467,16 @@ if (imagenArchivo.length > 8_000_000) {
       )}
     </div>
   );
+  
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router basename={basename}>
+      <Routes>
+        <Route path="/" element={<PrincipalApp />} />
+        <Route path="/dispositivo/:id" element={<DispositivoInfo />} />
+      </Routes>
+    </Router>
+  );
+}

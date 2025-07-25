@@ -1,12 +1,15 @@
 import { useState, useRef } from "react";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ModalAsignarAreas({ visible, rackId, onClose, onSuccess }) {
   const [image, setImage] = useState(null);
   const [areas, setAreas] = useState([]);
   const imgRef = useRef();
 
   const handleAddArea = (e) => {
-    const rect = imgRef.current.getBoundingClientRect();
     const x = e.nativeEvent.offsetX;
     const y = e.nativeEvent.offsetY;
     const width = 100;
@@ -19,7 +22,7 @@ function ModalAsignarAreas({ visible, rackId, onClose, onSuccess }) {
   };
 
   const handleSubmit = () => {
-    fetch("http://localhost/mapeo-plantas/backend/api/guardar_imagen_con_areas.php", {
+    fetch(`${BASE_URL}/api/guardar_imagen_con_areas.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -28,15 +31,15 @@ function ModalAsignarAreas({ visible, rackId, onClose, onSuccess }) {
         dispositivos: areas
       })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        onSuccess();
-        onClose();
-      } else {
-        alert("Error: " + data.error);
-      }
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          onSuccess();
+          onClose();
+        } else {
+          alert("Error: " + data.error);
+        }
+      });
   };
 
   const handleImage = (e) => {
@@ -64,11 +67,14 @@ function ModalAsignarAreas({ visible, rackId, onClose, onSuccess }) {
           />
         )}
         {areas.map((a, i) => (
-          <div key={i}
+          <div
+            key={i}
             style={{
               position: "absolute",
-              top: a.y, left: a.x,
-              width: a.width, height: a.height,
+              top: a.y,
+              left: a.x,
+              width: a.width,
+              height: a.height,
               border: "2px dashed red",
               backgroundColor: "rgba(255,0,0,0.2)"
             }}

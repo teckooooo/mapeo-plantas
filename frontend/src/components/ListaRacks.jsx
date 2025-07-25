@@ -2,6 +2,10 @@ import { useEffect, useState, useMemo } from "react";
 import RackImageEditor from "./RackImageEditor.tsx";
 import "./ListaRacks.css";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
   const [abiertos, setAbiertos] = useState({});
@@ -11,7 +15,7 @@ function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuev
   useEffect(() => {
     if (!plantaId) return;
 
-    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
+    fetch(`${BASE_URL}/api/get_racks_con_equipos.php?planta_id=${plantaId}`)
       .then(res => res.json())
       .then(data => {
         if (!Array.isArray(data)) {
@@ -58,7 +62,7 @@ function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuev
   const handleEliminarFoto = (fotoId) => {
     if (!window.confirm("¿Estás seguro de eliminar esta imagen?")) return;
 
-    fetch("http://localhost/mapeo-plantas/backend/api/delete_imagen.php", {
+    fetch(`${BASE_URL}/api/delete_imagen.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imagen_id: fotoId }),

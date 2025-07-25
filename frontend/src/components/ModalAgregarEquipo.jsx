@@ -3,6 +3,10 @@ import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import "./ModalAgregarEquipo.css";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ModalAgregarEquipo({
   plantaId,
   visible,
@@ -24,12 +28,11 @@ function ModalAgregarEquipo({
 
   const imgRef = useRef(null);
   const [scaleFactor, setScaleFactor] = useState(1);
-
   const usandoAreaPreseleccionada = !!areaPreseleccionada;
 
   useEffect(() => {
     if (plantaId) {
-      fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaId}`)
+      fetch(`${BASE_URL}/api/get_racks_by_planta.php?planta_id=${plantaId}`)
         .then(res => res.json())
         .then(json => {
           if (json.success && Array.isArray(json.data)) {
@@ -62,7 +65,7 @@ function ModalAgregarEquipo({
     const area_width = usandoAreaPreseleccionada ? areaPreseleccionada.width : Math.round(completedCrop?.width ?? 0);
     const area_height = usandoAreaPreseleccionada ? areaPreseleccionada.height : Math.round(completedCrop?.height ?? 0);
 
-    fetch("http://localhost/mapeo-plantas/backend/api/create_equipo.php", {
+    fetch(`${BASE_URL}/api/create_equipo.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -117,7 +120,7 @@ function ModalAgregarEquipo({
 
     const nombre_archivo = `dispositivo_${Date.now()}.jpg`;
 
-    fetch("http://localhost/mapeo-plantas/backend/api/guardar_imagen.php", {
+    fetch(`${BASE_URL}/api/guardar_imagen.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

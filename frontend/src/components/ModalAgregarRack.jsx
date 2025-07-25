@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ModalAgregarRack({ plantaId, visible, onClose, onSuccess }) {
   const [numero, setNumero] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -7,30 +11,29 @@ function ModalAgregarRack({ plantaId, visible, onClose, onSuccess }) {
   if (!visible) return null;
 
   const handleSubmit = () => {
-  if (!numero.trim()) return alert("El número del rack es obligatorio");
+    if (!numero.trim()) return alert("El número del rack es obligatorio");
 
-  fetch("http://localhost/mapeo-plantas/backend/api/create_rack.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      planta_id: plantaId,
-      numero,
-      descripcion,
-    }),
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        onSuccess();
-        onClose();
-        setNumero("");
-        setDescripcion("");
-      } else {
-        alert("Error al agregar rack");
-      }
-    });
-};
-
+    fetch(`${BASE_URL}/api/create_rack.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        planta_id: plantaId,
+        numero,
+        descripcion,
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          onSuccess();
+          onClose();
+          setNumero("");
+          setDescripcion("");
+        } else {
+          alert("Error al agregar rack");
+        }
+      });
+  };
 
   return (
     <div style={{

@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/mapeo-plantas/frontend/static/css/main.0070c17b.css",
+    "main.js": "/mapeo-plantas/frontend/static/js/main.b4dc60ce.js",
+    "static/media/logo.png": "/mapeo-plantas/frontend/static/media/logo.1b832dbb3a5956318f98.png",
+    "index.html": "/mapeo-plantas/frontend/index.html",
+    "main.0070c17b.css.map": "/mapeo-plantas/frontend/static/css/main.0070c17b.css.map",
+    "main.b4dc60ce.js.map": "/mapeo-plantas/frontend/static/js/main.b4dc60ce.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0070c17b.css",
+    "static/js/main.b4dc60ce.js"
+  ]
+}

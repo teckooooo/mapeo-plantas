@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import "./ModalGestionPlantas.css";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function ModalGestionPlantas({
   visible,
   onClose,
@@ -50,7 +54,7 @@ function ModalGestionPlantas({
     }
 
     setLoading(true);
-    fetch("http://localhost/mapeo-plantas/backend/api/upload_esquema.php", {
+    fetch(`${BASE_URL}/api/upload_esquema.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planta_id: plantaId, base64 }),
@@ -76,7 +80,7 @@ function ModalGestionPlantas({
   const eliminarEsquema = (plantaId) => {
     if (!window.confirm("¿Eliminar la imagen de esquema de esta planta?")) return;
 
-    fetch("http://localhost/mapeo-plantas/backend/api/delete_esquema.php", {
+    fetch(`${BASE_URL}/api/delete_esquema.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planta_id: plantaId }),

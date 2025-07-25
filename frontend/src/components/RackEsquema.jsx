@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost/mapeo-plantas/backend"
+  : "http://192.168.1.152/mapeo-plantas/backend";
+
 function RackEsquema({ plantaId }) {
   const [racks, setRacks] = useState([]);
 
   useEffect(() => {
     if (!plantaId) return;
 
-    fetch(`http://localhost/mapeo-plantas/backend/api/get_racks_by_planta.php?planta_id=${plantaId}`)
+    fetch(`${BASE_URL}/api/get_racks_by_planta.php?planta_id=${plantaId}`)
       .then(res => res.json())
       .then(data => setRacks(data));
   }, [plantaId]);
