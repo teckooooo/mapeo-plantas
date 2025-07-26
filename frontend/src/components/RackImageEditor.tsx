@@ -36,7 +36,7 @@ function RackImageEditor({ foto, dispositivos = [], onNuevaArea, imagenId }: Pro
   const [currentBox, setCurrentBox] = useState<Omit<Dispositivo, "id"> | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [localDispositivos, setLocalDispositivos] = useState(dispositivos);
-  const [mostrarCajas, setMostrarCajas] = useState(true);
+  const [mostrarCajas, setMostrarCajas] = useState(false);
 
   useEffect(() => {
     setLocalDispositivos(dispositivos);

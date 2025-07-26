@@ -79,13 +79,28 @@ body {
 }
 
 .foto-recortada {
-  border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  background-repeat: no-repeat;
-  background-size: auto;
+  max-width: 800px;
+  width: 100%;
+  height: auto;
   cursor: pointer;
-  image-rendering: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  display: block;
 }
+
+
+
+.imagen-dispositivo {
+  max-width: 300px;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  cursor: pointer;
+  object-fit: contain;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
 
 /* Modal */
 #visorModal {

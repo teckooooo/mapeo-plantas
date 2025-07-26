@@ -13,8 +13,6 @@ import DispositivoInfo from "./components/DispositivoInfo";
 
 const basename = "/mapeo-plantas/frontend";
 
-
-
 function PrincipalApp() {
   const [plantas, setPlantas] = useState([]);
   const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
@@ -103,10 +101,6 @@ const handleEliminarPlanta = (id) => {
     });
 };
 
-
-
-
-
   const mostrarNotificacion = (mensaje, tipo = "success") => {
     setNotificacion({ mensaje, tipo });
     setTimeout(() => setNotificacion(null), 3000);
@@ -116,8 +110,6 @@ const handleEliminarPlanta = (id) => {
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/get_plantas.php`)
-
-
 
       .then(res => res.json())
       .then(data => {
@@ -205,8 +197,6 @@ if (imagenArchivo.length > 8_000_000) {
     alert("❌ Fallo al subir imagen:\n" + err.message);
   });
 
-
-
   };
 
   const handleExpandir = (estado) => {
@@ -255,7 +245,7 @@ if (imagenArchivo.length > 8_000_000) {
           <div className="instrucciones-box">
             <strong>📌 Instrucciones de uso:</strong>
             <ul>
-              <li><b>SHIFT + Q:</b> muestra u oculta las áreas delimitadas</li>
+              <li><b>Ctrl + Q:</b> muestra u oculta las áreas delimitadas</li>
               <li><b>SHIFT + clic izquierdo</b> y arrastrar sobre la imagen para agregar un nuevo dispositivo</li>
               <li><b>Ctrl + clic izquierdo:</b> sobre un dispositivo para editar su área</li>
             </ul>
@@ -270,10 +260,6 @@ if (imagenArchivo.length > 8_000_000) {
   onAumentar={aumentarEsquema}
   onReducir={reducirEsquema}
 />
-
-
-
-
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0" }}>
           <button onClick={() => handleExpandir(true)}>🔽 Expandir todos</button>
           <button onClick={() => handleExpandir(false)}>🔼 Contraer todos</button>
@@ -429,11 +415,6 @@ if (imagenArchivo.length > 8_000_000) {
     reader.readAsDataURL(file);
   }}
 />
-
-
-
-
-
               <div style={{ marginTop: "10px", textAlign: "right" }}>
                 <button onClick={() => setModalImagenVisible(false)}>Cancelar</button>
                 <button onClick={subirImagen} style={{ marginLeft: "10px" }}>Subir Imagen</button>
@@ -458,8 +439,6 @@ if (imagenArchivo.length > 8_000_000) {
       .then(setPlantas);
   }}
 />
-
-
       </main>
 
       {notificacion && (

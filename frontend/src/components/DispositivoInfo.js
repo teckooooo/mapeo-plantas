@@ -25,39 +25,104 @@ function DispositivoInfo() {
         console.error("Error al obtener datos:", err);
       });
   }, [id]);
+//imagen principal
+  useEffect(() => {
+  if (!equipo || !equipo.foto || !equipo.area_x) return;
 
-const mostrarEnGrande = (src) => {
-  const visor = document.getElementById("visorRecorte");
+  const canvas = document.getElementById("previewCanvas");
+  const ctx = canvas.getContext("2d");
 
   const x = Number(equipo.area_x);
   const y = Number(equipo.area_y);
   const w = Number(equipo.area_width);
   const h = Number(equipo.area_height);
 
-  if (!isNaN(x) && !isNaN(y) && w > 0 && h > 0) {
+  const MAX_W = 800;
+  const scale = MAX_W / w;
+
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    ctx.drawImage(img, x, y, w, h, 0, 0, w * scale, h * scale);
+  };
+  img.src = equipo.foto;
+}, [equipo]);
+
+useEffect(() => {
+  if (!equipo || !equipo.fotos_adicionales) return;
+
+  equipo.fotos_adicionales.forEach((f, i) => {
+    const canvas = document.getElementById(`canvas-adicional-${i}`);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const MAX_W = 300;
+
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => {
+      const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+
+      canvas.width = scaledWidth;
+      canvas.height = scaledHeight;
+
+      ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+    };
+    img.src = f.ruta;
+  });
+}, [equipo]);
+
+
+
+
+
+const mostrarEnGrande = (src) => {
+  const visor = document.getElementById("visorRecorte");
+
+  const esPrincipal = src === equipo.foto;
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    let finalURL;
+
+    if (esPrincipal && equipo.area_x && equipo.area_y && equipo.area_width && equipo.area_height) {
+      // Mostrar recorte SOLO si es la imagen principal
+      const x = Number(equipo.area_x);
+      const y = Number(equipo.area_y);
+      const w = Number(equipo.area_width);
+      const h = Number(equipo.area_height);
+
       const canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
 
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+      finalURL = canvas.toDataURL("image/jpeg", 0.95);
 
-      // Mostrar el recorte en el visor
-      visor.style.backgroundImage = `url(${canvas.toDataURL("image/jpeg", 0.95)})`;
-      visor.style.width = `${w}px`;
-      visor.style.height = `${h}px`;
-      visor.style.backgroundPosition = "center";
-      visor.style.backgroundRepeat = "no-repeat";
-      visor.style.backgroundSize = "contain";
-    };
-    img.src = src;
-  }
+      visor.style.aspectRatio = `${w} / ${h}`;
+    } else {
+      // Mostrar la imagen completa si es una adicional
+      finalURL = src;
+      visor.style.aspectRatio = `${img.width} / ${img.height}`;
+    }
 
+    // Aplicar estilos generales
+    visor.style.backgroundImage = `url(${finalURL})`;
+    visor.style.width = "80vw";
+    visor.style.maxWidth = "800px";
+    visor.style.height = "auto";
+    visor.style.backgroundSize = "contain";
+    visor.style.backgroundRepeat = "no-repeat";
+    visor.style.backgroundPosition = "center";
+  };
+
+  img.src = src;
   document.getElementById("visorModal").style.display = "flex";
 };
+
 
 
 
@@ -201,17 +266,13 @@ const mostrarEnGrande = (src) => {
 
 <div className="galeria-fotos">
   {(equipo.foto && equipo.area_x && equipo.area_y && equipo.area_width && equipo.area_height) ? (
-    <div
-      className="foto-recortada"
-      onClick={() => mostrarEnGrande(equipo.foto)}
-      style={{
-        backgroundImage: `url(${equipo.foto})`,
-        backgroundPosition: `-${equipo.area_x}px -${equipo.area_y}px`,
-        backgroundSize: "auto",
-        width: `${equipo.area_width}px`,
-        height: `${equipo.area_height}px`
-      }}
-    ></div>
+    <canvas
+  id="previewCanvas"
+  className="foto-recortada"
+  onClick={() => mostrarEnGrande(equipo.foto)}
+></canvas>
+
+
   ) : (
     equipo.foto && (
       <img
@@ -225,12 +286,22 @@ const mostrarEnGrande = (src) => {
 
   {/* imágenes adicionales */}
   <div className="fotos-adicionales">
-    {(equipo.fotos_adicionales || []).map((f) => (
-      <div key={f.id} className="foto-adicional">
-        <img src={f.ruta} onClick={() => mostrarEnGrande(f.ruta)} />
-        <button className="btn-eliminar-foto" onClick={() => eliminarFotoAdicional(f.id)}>✖</button>
-      </div>
-    ))}
+    {(equipo.fotos_adicionales || []).map((f, i) => (
+  <div key={f.id} className="foto-adicional" style={{ position: "relative" }}>
+    <canvas
+      id={`canvas-adicional-${i}`}
+      className="foto-recortada"
+      onClick={() => mostrarEnGrande(f.ruta)}
+    ></canvas>
+    <button
+      className="btn-eliminar-foto"
+      onClick={() => eliminarFotoAdicional(f.id)}
+    >
+      ✖
+    </button>
+  </div>
+))}
+
   </div>
 </div>
 

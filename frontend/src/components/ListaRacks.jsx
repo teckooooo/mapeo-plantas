@@ -6,11 +6,26 @@ const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost/mapeo-plantas/backend"
   : "http://192.168.1.152/mapeo-plantas/backend";
 
+
+
+
 function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuevaArea }) {
   const [racks, setRacks] = useState([]);
-  const [abiertos, setAbiertos] = useState({});
+  const [abiertos, setAbiertos] = useState({fa});
+  const [mostrarBotonesEliminar, setMostrarBotonesEliminar] = useState(false);
 
   const STORAGE_KEY = useMemo(() => `rack_expandido_por_id_${plantaId}`, [plantaId]);
+
+  useEffect(() => {
+  const listener = (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+      setMostrarBotonesEliminar(prev => !prev);
+    }
+  };
+
+  window.addEventListener("keydown", listener);
+  return () => window.removeEventListener("keydown", listener);
+}, []);
 
   useEffect(() => {
     if (!plantaId) return;
@@ -108,12 +123,15 @@ function ListaRacks({ plantaId, recargar, setRecargarDatos, expandirTodo, onNuev
                           onNuevaArea={(area) => onNuevaArea({ ...area, rack_id: rack.id })}
                           imagenId={foto.id}
                         />
-                        <button
-                          onClick={() => handleEliminarFoto(foto.id)}
-                          className="btn-eliminar-imagen"
-                        >
-                          🗑️
-                        </button>
+                        {mostrarBotonesEliminar && (
+  <button
+    onClick={() => handleEliminarFoto(foto.id)}
+    className="btn-eliminar-imagen"
+  >
+    🗑️
+  </button>
+)}
+
                       </div>
                     </div>
                   ))
